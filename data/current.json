@@ -1,35 +1,195 @@
 {
-  "timestamp": "2026-03-19T14:30:00+00:00",
+  "selection_id": "8ddd7037cb73b4eb",
+  "timestamp": "2026-03-19T11:09:51.914989+00:00",
   "city": "Atlanta, GA",
-  "neighborhood_searched": "Clarkston, GA",
-  "day_number": 5,
-  "observation": "A parking lot shared by a Laundromat and three restaurants with no signs in English. The Ethiopian place has a handwritten specials board propped against the door. A man is fixing a bicycle on the sidewalk. The air smells like berbere and exhaust.",
+  "neighborhood_searched": "Lilburn, GA",
+  "search_params": {
+    "min_reviews": 5,
+    "max_reviews": 300,
+    "min_rating": 3.5
+  },
+  "selection_mode": "llm",
+  "raw_result_count": 20,
+  "candidate_count": 10,
+  "all_candidates": [
+    {
+      "name": "Leydi Grill Restaurant",
+      "address": "888 Pleasant Hill Rd suite m, Lilburn, GA 30047, USA",
+      "review_count": 58,
+      "rating": 4.8,
+      "types": [
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primary_type": "restaurant"
+    },
+    {
+      "name": "Inca Maya Restaurant",
+      "address": "605 Indian Trail Lilburn Rd NW Suite 103, Lilburn, GA 30047, USA",
+      "review_count": 43,
+      "rating": 4.8,
+      "types": [
+        "mexican_restaurant",
+        "steak_house",
+        "peruvian_restaurant",
+        "seafood_restaurant",
+        "vegetarian_restaurant",
+        "latin_american_restaurant",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primary_type": "mexican_restaurant"
+    },
+    {
+      "name": "Wing It",
+      "address": "4805 Lawrenceville Hwy Suite #104, Lilburn, GA 30047, USA",
+      "review_count": 11,
+      "rating": 5,
+      "types": [
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primary_type": "restaurant"
+    },
+    {
+      "name": "Chipocos cuisine restaurant",
+      "address": "895 Indian Trail Lilburn Rd NW, Lilburn, GA 30047, USA",
+      "review_count": 10,
+      "rating": 4.6,
+      "types": [
+        "family_restaurant",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primary_type": "family_restaurant"
+    },
+    {
+      "name": "Diablos BBQ",
+      "address": "733 Pleasant Hill Rd Suite 1200, Lilburn, GA 30047, USA",
+      "review_count": 87,
+      "rating": 4.6,
+      "types": [
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primary_type": "restaurant"
+    },
+    {
+      "name": "Loco Peppers Sports Cantina",
+      "address": "865 Indian Trail Lilburn Rd NW Suite #5, Lilburn, GA 30047, USA",
+      "review_count": 111,
+      "rating": 4.6,
+      "types": [
+        "bar_and_grill",
+        "bar",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primary_type": "bar_and_grill"
+    },
+    {
+      "name": "Naz's Halal Food - Lilburn",
+      "address": "4805 Lawrenceville Hwy Suite 406, Lilburn, GA 30047, USA",
+      "review_count": 94,
+      "rating": 4.6,
+      "types": [
+        "halal_restaurant",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primary_type": "halal_restaurant"
+    },
+    {
+      "name": "ETHIKA Kitchen & Lounge",
+      "address": "950 Indian Trail Lilburn Rd NW #3a, Lilburn, GA 30047, USA",
+      "review_count": 36,
+      "rating": 4,
+      "types": [
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primary_type": "restaurant"
+    },
+    {
+      "name": "Panarepa",
+      "address": "810 Beaver Ruin Rd, Lilburn, GA 30047, USA",
+      "review_count": 253,
+      "rating": 4.5,
+      "types": [
+        "latin_american_restaurant",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primary_type": "latin_american_restaurant"
+    },
+    {
+      "name": "Morrell's BBQ",
+      "address": "4060 Five Forks Trickum Rd SW, Lilburn, GA 30047, USA",
+      "review_count": 51,
+      "rating": 4.8,
+      "types": [
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "primary_type": "restaurant"
+    }
+  ],
   "selected": {
-    "name": "Kathmandu Kitchen",
-    "address": "3871 Church St, Clarkston, GA 30021",
-    "rating": 4.4,
-    "review_count": 89,
-    "lat": 33.8095,
-    "lng": -84.2399,
-    "phone": "(404) 555-0142",
-    "website": "https://www.kathmandukitchenatl.com",
-    "google_maps_url": "https://maps.google.com/?cid=12345678901234567",
-    "hours": [
-      "Monday: 11:00 AM – 9:30 PM",
-      "Tuesday: 11:00 AM – 9:30 PM",
-      "Wednesday: 11:00 AM – 9:30 PM",
-      "Thursday: 11:00 AM – 9:30 PM",
-      "Friday: 11:00 AM – 10:00 PM",
-      "Saturday: 11:00 AM – 10:00 PM",
-      "Sunday: Closed"
+    "name": "Chipocos cuisine restaurant",
+    "address": "895 Indian Trail Lilburn Rd NW, Lilburn, GA 30047, USA",
+    "rating": 4.6,
+    "review_count": 10,
+    "place_id": "ChIJK-ClDbOl9YgR_7McQ353Ua4",
+    "lat": 33.9049525,
+    "lng": -84.1553813,
+    "price_level": null,
+    "types": [
+      "family_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
     ],
-    "editorial_summary": "Family-run Nepalese restaurant serving momos, thali, and chow mein in a strip mall storefront."
+    "primary_type": "family_restaurant",
+    "phone": "(862) 596-4937",
+    "website": null,
+    "google_maps_url": "https://maps.google.com/?cid=12560952219888563199&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+    "hours": [],
+    "editorial_summary": null,
+    "photo_refs": [
+      "places/ChIJK-ClDbOl9YgR_7McQ353Ua4/photos/ATCDNfWICHr-xfrkrIVatWoKbNRj_alWR_58wEakUiNdd_HxNFHgFo0JB2sUS8uGezH-cDhlpPIkvy-gpAaAs9_So6Jy7nza9_6WK6IItWhR8eThgHvnB0MenSCkLlnJY-h3IIv2023W0DSRh86u17Suq4jE6qwgS2A0AIY3sjcyvU_BeTZMWmg5iNWODhh3XzGW_NXTGvfxiyjFop7zfVDnaF6_4yfsrdWPGgxgG3xOzW91nMG5GKZ02q8_hhogfoig88kCDLX8kB278oYh4LXBKuUFD6DclAnZeyPbCWYOVdGnHBarNPiJQGZScXtrZLTA1icSvkzZW8WJod0aAeVt-3uVYITQAc9PvHV675Ke4Zviczb_A-VXJpwc5GOr_dBhtmbe54q1VtE8OeEuD1iy9OOGNZArsceWSCFBDE6xS7qYr90lDeKMWVbFHe4Njb-1",
+      "places/ChIJK-ClDbOl9YgR_7McQ353Ua4/photos/ATCDNfUU3DRXCAY0QAVEXuULn6iid1Gxv97Q0I6qLuAmrVH-NO3ByTyNIs8pIjc9u2qFhlijRycmUBIIMnUzXcgWmasq9XVPtsSdOEfUFMenZflj_YYH_PORvZmt_OrGigz0Ju5aOVOcIZ7ece_KEOpxN6MDtrdTHdCqSOkyFHdniQrPHHHKEe9ob8jtCFUpgATTV7x9Ct0RpyDnkzsJYAX8FvJUVQnLAhhStd7A2gtRxG19p2nGkVv5HMH-OqWp4EP1o8WnGe5QWZkFvpf_AyX5Ci4H1qMOH9EXQJDvdcsKMyLFLaB6UVQMvZ3hI2yjRxX7n9dwqadwWylJfg7CMz8Docw8xqMQtptYt_yArbBflO67SGD0FcVwjR3T452qKrf5Bsvf3wCLWQF0K1kGiVOLsXMjaI-dov47F2SiM5JUyWqAQoCE79NSLGio6IkP4Xjz",
+      "places/ChIJK-ClDbOl9YgR_7McQ353Ua4/photos/ATCDNfXa9X8vVa5xQU2AG5P9XjgZq5eSLs18a1LalnfYvSQym1V6ojhv7YqiaEGTR0U9tb8B4I2r9IsgVlW4NbMuN7HtzPjyCcG5gl1BBEthNfhFxKSFUlIK1NDCGiDooReqe0Tn3DWbQ6KxrR5dQR3bSRproJApQfTjjPciEX6o506RuzLd_DBOkGUMS871hhaLRneIFxNOib3hrMYf3V4kKB-53-uc6hSL-vkqv3Odk7lp8TqW4259PYcWoavlXzdNbHLwsP6GwnE35R7Khf3uSVyqcmMQ_CG6t_5GarBLvKJx4H8e0f1DSk0tXf8syakSLLusOygfp6H2491IcFLixqPZwQW21Sze811fmsPnVX3u6DSFVc1hwU3HK0OCak0TbWZkhCnR96aZQM4lFgT9fZO7Eg4RNiHB73dl9Uj4Jnv1YbKIOxqh1W7FokEY2yEq",
+      "places/ChIJK-ClDbOl9YgR_7McQ353Ua4/photos/ATCDNfUkmZ9wfJYVBTp3FtoXcrFb3eXBGbuDrO18w7dtLLjN-OFwE6L3Zu4oX2trZjL68klWcozA1E2tp7twDz8aSyH4UJunVQE7tZKK0WFRwkzWQcjQQoi6sVyU4hDj8HqrHHNg03Sw9aKo1Vhy8kTARHW12gm8_CuiZYx_pCkkxzxT1pmhQuz4hKa4DkXUPbuYzm5cpOrsk8CedGaeWmo7hmuYyUobEuTs2C0cXLwchc54aUFuuPmx951tkUb39webBb4iWNGHgjIKm86ndAM1yVI8mWMpr_RhhN08mDuWNIP7cWL0z-dfRJcKUhytd5crAY4nY8jw3VeHHNEExg4fBq-IlbdNegAB3kS003kMfou1cBAySDkSAlO6BvW7VVJIrqIvrWBcRxWnC6zEzYPRrF5AvTVwZmBByVwWup3RHk2Dh0H1mVaJiRpVcG7OrQ",
+      "places/ChIJK-ClDbOl9YgR_7McQ353Ua4/photos/ATCDNfV80ZVlkEJJ_OY0XEY8hOEVAmUTjfwb3aHP_2EBpwz0NjHE5-36X83NtEMGLCPOLto7IKclgGKRw6FKNDSU88C43Q0ZNb7NJu1MSAZvjHGiJT-_cBHhCOJrz06as_EvbV5M1lVy0sfgYBIaSk6_OOlF92ON6X9BgElP7i7dSU6ROMIRQ3v0BxH_aG_CgAwowOtvOCEKzreDwVKGJEfwKGjOHKNy7pgZzKSMesurtwHnx0WjaR9bip_X8HkXknIAl8vYQQRevg8XK4vyY3SGYFRT_nEOqNCdteBha1SCJKdgnQo91iz91s2AVnqjB-HK80C_fvNO0wCy5hwNZ3egjrHbgo5LC8FC2MDO0U2XDHMSP20gprRr_oWkiG2ZulNgEspoGD_JW3VkOW7p7Arm2CnmfuwRolz_5Q2GTRYVx2ZvJoQuSRe7rrUXggMEz3IP"
+    ]
   },
+  "attempt_number": 1,
   "llm_judgment": {
-    "selected_index": 2,
-    "selected_name": "Kathmandu Kitchen",
-    "reasoning": "A Nepalese family restaurant in a diverse immigrant corridor. 89 reviews suggests a loyal local following without mainstream visibility. The strip mall location and cuisine type are strong indicators of owner-operated independence."
+    "selected_index": 3,
+    "selected_name": "Chipocos cuisine restaurant",
+    "reasoning": "N/A",
+    "parse_note": "extracted via regex fallback"
   },
-  "selection_id": "a1b2c3d4e5f6a7b8",
-  "selection_mode": "llm"
+  "llm_provider": "gemini"
 }
