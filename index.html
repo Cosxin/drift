@@ -201,6 +201,8 @@
       pointer-events: none;
       mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.15) 15%, rgba(0,0,0,0.7) 50%, black 100%);
       -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.15) 15%, rgba(0,0,0,0.7) 50%, black 100%);
+      transition: transform 0.05s linear;
+      will-change: transform;
     }
 
     .trajectory-svg {
@@ -267,6 +269,16 @@
     @keyframes ringPulse {
       0%, 100% { opacity: 0.4; r: 8; }
       50% { opacity: 0; r: 18; }
+    }
+
+    .trajectory-path.scroll-driven,
+    .trajectory-glow.scroll-driven {
+      animation: none;
+    }
+
+    .trajectory-endpoint.scroll-driven,
+    .endpoint-ring.scroll-driven {
+      animation: none;
     }
 
     .horizon-glow {
@@ -890,6 +902,88 @@
             if (target) target.scrollIntoView({ behavior: 'smooth' });
           });
         });
+
+        // ── Scroll-driven trajectory animation ──────────
+        initTrajectoryScroll();
+      }
+
+      function initTrajectoryScroll() {
+        var container = document.querySelector('.trajectory-container');
+        if (!container) return;
+
+        var pathEl = container.querySelector('.trajectory-path');
+        var glowEl = container.querySelector('.trajectory-glow');
+        var endpoints = container.querySelectorAll('.trajectory-endpoint');
+        var rings = container.querySelectorAll('.endpoint-ring');
+        var pageWalk = document.getElementById('page-walk');
+        if (!pathEl || !pageWalk) return;
+
+        // Measure actual path length once drawn
+        var pathLen = 800; // fallback
+        try { pathLen = pathEl.getTotalLength(); } catch (e) {}
+
+        // Wait for draw animation to complete (0.5s delay + 3s draw + small buffer)
+        var DRAW_DURATION = 3700;
+        var scrollReady = false;
+
+        setTimeout(function () {
+          // Switch to JS-driven mode
+          pathEl.classList.add('scroll-driven');
+          pathEl.style.strokeDasharray = pathLen;
+          pathEl.style.strokeDashoffset = '0';
+
+          glowEl.classList.add('scroll-driven');
+          glowEl.style.strokeDasharray = pathLen;
+          glowEl.style.strokeDashoffset = '0';
+
+          endpoints.forEach(function (el) {
+            el.classList.add('scroll-driven');
+            el.style.opacity = '1';
+          });
+          rings.forEach(function (el) {
+            el.classList.add('scroll-driven');
+            el.style.opacity = '0.4';
+          });
+
+          scrollReady = true;
+        }, DRAW_DURATION);
+
+        // Scroll listener on html (snap-scroll container)
+        var scrollEl = document.documentElement;
+        var ticking = false;
+
+        function onScroll() {
+          if (ticking) return;
+          ticking = true;
+          requestAnimationFrame(function () {
+            ticking = false;
+            var scrollTop = scrollEl.scrollTop;
+            var viewH = window.innerHeight;
+
+            // progress: 0 when at top of page-walk, 1 when page-walk fully scrolled away
+            var progress = Math.min(1, Math.max(0, scrollTop / viewH));
+
+            // Grid parallax: shift up and slightly scale, creating a "rushing forward" feel
+            var translateY = -progress * 60; // px shift up
+            var scale = 1 + progress * 0.08; // slight zoom
+            container.style.transform = 'translateY(' + translateY + 'px) scale(' + scale + ')';
+
+            // Path erase: as scroll progresses, erase path from the start (near/bottom end)
+            // Negative dashoffset shifts the visible portion forward along the path
+            if (scrollReady) {
+              var eraseAmount = progress * pathLen;
+              pathEl.style.strokeDashoffset = -eraseAmount;
+              glowEl.style.strokeDashoffset = -eraseAmount;
+
+              // Fade out waypoint dots and endpoint
+              var dotOpacity = Math.max(0, 1 - progress * 2.5);
+              endpoints.forEach(function (el) { el.style.opacity = dotOpacity; });
+              rings.forEach(function (el) { el.style.opacity = dotOpacity * 0.4; });
+            }
+          });
+        }
+
+        scrollEl.addEventListener('scroll', onScroll, { passive: true });
       }
 
       /* ── Fetch ──────────────────────────────────────── */
