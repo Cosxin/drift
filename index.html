@@ -101,6 +101,8 @@
 
     #page-walk {
       background: var(--bg);
+      justify-content: flex-start;
+      padding-top: 3rem;
     }
 
     .walk-header {
@@ -185,6 +187,90 @@
     @keyframes pulse {
       0%, 100% { opacity: 0.3; }
       50% { opacity: 0.7; }
+    }
+
+    /* ── Trajectory Grid ──────────────────────────────── */
+
+    .trajectory-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 55vh;
+      overflow: hidden;
+      pointer-events: none;
+      mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.15) 15%, rgba(0,0,0,0.7) 50%, black 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.15) 15%, rgba(0,0,0,0.7) 50%, black 100%);
+    }
+
+    .trajectory-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .grid-line {
+      stroke: rgba(100, 220, 255, 0.07);
+      stroke-width: 0.5;
+      fill: none;
+    }
+
+    .grid-line-accent {
+      stroke: rgba(100, 220, 255, 0.14);
+      stroke-width: 0.7;
+      fill: none;
+    }
+
+    .trajectory-path {
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 800;
+      stroke-dashoffset: 800;
+      animation: drawPath 3s ease-out 0.5s forwards;
+    }
+
+    .trajectory-glow {
+      fill: none;
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.3;
+      stroke-dasharray: 800;
+      stroke-dashoffset: 800;
+      animation: drawPath 3s ease-out 0.5s forwards;
+    }
+
+    @keyframes drawPath {
+      to { stroke-dashoffset: 0; }
+    }
+
+    .trajectory-endpoint {
+      opacity: 0;
+      animation: endpointAppear 0.6s ease-out 3.2s forwards;
+    }
+
+    .endpoint-ring {
+      fill: none;
+      stroke: #64dcff;
+      stroke-width: 1.5;
+      opacity: 0;
+      animation: endpointAppear 0.6s ease-out 3.4s forwards, ringPulse 2.5s ease-in-out 3.4s infinite;
+    }
+
+    @keyframes endpointAppear {
+      0% { opacity: 0; transform: scale(0.5); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes ringPulse {
+      0%, 100% { opacity: 0.4; r: 8; }
+      50% { opacity: 0; r: 18; }
+    }
+
+    .horizon-glow {
+      stop-color: rgba(100, 220, 255, 0.06);
     }
 
     /* ── Page 2: Discovery ──────────────────────────── */
@@ -434,10 +520,12 @@
 
     @media (max-width: 700px) {
       .section { padding: 2rem 1.5rem; }
+      #page-walk { padding-top: 2rem; }
 
 .logo { font-size: 1.3rem; }
       .restaurant-name { font-size: 1.8rem; }
       .coordinates { font-size: 1rem; }
+      .trajectory-container { height: 50vh; }
     }
 
     @media (max-width: 480px) {
@@ -535,10 +623,132 @@
         }
         h += '</div>'; // section-inner
 
+        // Trajectory grid SVG
+        h += buildTrajectoryGrid();
+
         if (sel) {
           h += '<div class="scroll-hint">scroll</div>';
         }
         return h;
+      }
+
+      /* ── Trajectory Grid SVG ─────────────────────────── */
+
+      function buildTrajectoryGrid() {
+        // Perspective projection: vanishing point at center-top
+        var vw = 800, vh = 500;
+        var vpx = 400, vpy = 40; // vanishing point
+
+        // Project a ground-plane point to screen via perspective
+        // gz = depth (0 = horizon, 1 = bottom), gx = horizontal (-1 to 1)
+        function proj(gx, gz) {
+          var t = 0.05 + gz * 0.95; // avoid zero
+          var sx = vpx + (gx * (vw * 0.7)) * t;
+          var sy = vpy + (vh - vpy) * t;
+          return [sx.toFixed(1), sy.toFixed(1)];
+        }
+
+        var s = '<div class="trajectory-container">';
+        s += '<svg class="trajectory-svg" viewBox="0 0 ' + vw + ' ' + vh + '" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">';
+
+        // Defs: gradients
+        s += '<defs>';
+        s += '<linearGradient id="pathGrad" x1="0%" y1="0%" x2="100%" y2="100%">';
+        s += '<stop offset="0%" stop-color="#a855f7"/>';
+        s += '<stop offset="40%" stop-color="#64dcff"/>';
+        s += '<stop offset="100%" stop-color="#06ffa5"/>';
+        s += '</linearGradient>';
+        s += '<linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">';
+        s += '<stop offset="0%" stop-color="#a855f7" stop-opacity="0.4"/>';
+        s += '<stop offset="100%" stop-color="#06ffa5" stop-opacity="0.2"/>';
+        s += '</linearGradient>';
+        s += '<radialGradient id="endGlow" cx="50%" cy="50%" r="50%">';
+        s += '<stop offset="0%" stop-color="#64dcff" stop-opacity="0.8"/>';
+        s += '<stop offset="100%" stop-color="#64dcff" stop-opacity="0"/>';
+        s += '</radialGradient>';
+        s += '<radialGradient id="horizonGlow" cx="50%" cy="0%" r="80%">';
+        s += '<stop offset="0%" stop-color="rgba(100,220,255,0.08)"/>';
+        s += '<stop offset="100%" stop-color="rgba(100,220,255,0)"/>';
+        s += '</radialGradient>';
+        s += '</defs>';
+
+        // Horizon glow
+        s += '<ellipse cx="' + vpx + '" cy="' + (vpy + 30) + '" rx="300" ry="80" fill="url(#horizonGlow)"/>';
+
+        // Horizontal grid lines (receding into distance)
+        var hSteps = [0.08, 0.15, 0.22, 0.30, 0.40, 0.52, 0.65, 0.78, 0.90, 1.0];
+        for (var i = 0; i < hSteps.length; i++) {
+          var gz = hSteps[i];
+          var left = proj(-1.2, gz);
+          var right = proj(1.2, gz);
+          var cls = (i % 3 === 0) ? 'grid-line-accent' : 'grid-line';
+          s += '<line x1="' + left[0] + '" y1="' + left[1] + '" x2="' + right[0] + '" y2="' + right[1] + '" class="' + cls + '"/>';
+        }
+
+        // Vertical grid lines (converging to vanishing point)
+        var vSteps = [-1.0, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1.0];
+        for (var j = 0; j < vSteps.length; j++) {
+          var gx = vSteps[j];
+          var top = proj(gx, 0.02);
+          var bot = proj(gx, 1.0);
+          var cls2 = (gx === 0) ? 'grid-line-accent' : 'grid-line';
+          s += '<line x1="' + top[0] + '" y1="' + top[1] + '" x2="' + bot[0] + '" y2="' + bot[1] + '" class="' + cls2 + '"/>';
+        }
+
+        // Hardcoded random-walk trajectory (ground-plane coords)
+        var waypoints = [
+          [-0.35, 0.92],
+          [-0.28, 0.80],
+          [-0.15, 0.72],
+          [-0.20, 0.60],
+          [-0.08, 0.52],
+          [ 0.05, 0.45],
+          [ 0.12, 0.38],
+          [ 0.02, 0.30],
+          [ 0.10, 0.24],
+          [ 0.22, 0.18],
+          [ 0.18, 0.12]
+        ];
+
+        var pts = [];
+        for (var k = 0; k < waypoints.length; k++) {
+          pts.push(proj(waypoints[k][0], waypoints[k][1]));
+        }
+
+        // Build smooth path
+        var d = 'M' + pts[0][0] + ',' + pts[0][1];
+        for (var m = 1; m < pts.length; m++) {
+          // Simple quadratic smoothing
+          if (m < pts.length - 1) {
+            var cpx = (+pts[m][0]);
+            var cpy = (+pts[m][1]);
+            var ex = ((+pts[m][0]) + (+pts[m+1][0])) / 2;
+            var ey = ((+pts[m][1]) + (+pts[m+1][1])) / 2;
+            d += ' Q' + cpx + ',' + cpy + ' ' + ex.toFixed(1) + ',' + ey.toFixed(1);
+          } else {
+            d += ' L' + pts[m][0] + ',' + pts[m][1];
+          }
+        }
+
+        // Glow layer
+        s += '<path d="' + d + '" class="trajectory-glow" stroke="url(#glowGrad)"/>';
+        // Main path
+        s += '<path d="' + d + '" class="trajectory-path" stroke="url(#pathGrad)"/>';
+
+        // Endpoint
+        var ep = pts[pts.length - 1];
+        s += '<circle cx="' + ep[0] + '" cy="' + ep[1] + '" r="12" fill="url(#endGlow)" class="trajectory-endpoint"/>';
+        s += '<circle cx="' + ep[0] + '" cy="' + ep[1] + '" r="3.5" fill="#64dcff" class="trajectory-endpoint"/>';
+        s += '<circle cx="' + ep[0] + '" cy="' + ep[1] + '" class="endpoint-ring"/>';
+
+        // Small dots at each waypoint
+        for (var n = 0; n < pts.length - 1; n++) {
+          var opacity = 0.15 + (n / pts.length) * 0.4;
+          s += '<circle cx="' + pts[n][0] + '" cy="' + pts[n][1] + '" r="1.5" fill="#64dcff" opacity="' + opacity.toFixed(2) + '" class="trajectory-endpoint"/>';
+        }
+
+        s += '</svg></div>';
+        return s;
       }
 
       /* ── Page 2: Discovery ─────────────────────────── */
