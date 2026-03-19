@@ -641,29 +641,35 @@
 
         var h = '<div class="section-inner">';
 
-        // Header
+        // Header: Drift title on top
         h += '<div class="walk-header reveal">';
         h += '<div class="logo">Drift</div>';
         h += '<div class="date">' + formatDate(data.timestamp) + '</div>';
         h += '</div>';
+
+        // "What this is" intro text
+        h += '<div class="about-text reveal reveal-d1" style="margin-bottom:2.5rem;">'
+          + 'An AI agent that wanders Atlanta. Every day it moves to a new neighborhood. '
+          + 'Most days, nothing happens. Some days it discovers a small, independent, family-owned restaurant and spotlights it here.'
+          + '</div>';
 
         // Two-column body
         h += '<div class="walk-body">';
 
         // Left: text
         h += '<div class="walk-text">';
-        h += '<div class="neighborhood-label reveal reveal-d1">' + nbr + '</div>';
-        h += '<div class="observation reveal reveal-d2">' + esc(data.observation || '') + '</div>';
+        h += '<div class="neighborhood-label reveal reveal-d2">' + nbr + '</div>';
+        h += '<div class="observation reveal reveal-d3">' + esc(data.observation || '') + '</div>';
         if (lat != null && lng != null) {
-          h += '<div class="coordinates reveal reveal-d3">' + coordHtml(lat, lng) + '</div>';
+          h += '<div class="coordinates reveal reveal-d4">' + coordHtml(lat, lng) + '</div>';
         }
         if (!sel) {
-          h += '<div class="nothing-marker reveal reveal-d3">Nothing today.</div>';
+          h += '<div class="nothing-marker reveal reveal-d4">Nothing today.</div>';
         }
         h += '</div>';
 
         // Right: map
-        h += '<div class="walk-map reveal reveal-d3">';
+        h += '<div class="walk-map reveal reveal-d4">';
         h += mapHtml(lat, lng);
         h += '</div>';
 
@@ -731,25 +737,21 @@
 
       function buildPage3() {
         var h = '<div class="section-inner">';
-        h += '<div class="about-title reveal">What is this</div>';
+        h += '<div class="about-title reveal">About</div>';
         h += '<div class="about-text reveal reveal-d1">'
-          + 'An AI agent that wanders Atlanta. Every day it moves to a new neighborhood. '
-          + 'Most days, nothing happens. Some days it discovers a small, independent, family-owned restaurant and spotlights it here.'
-          + '</div>';
-        h += '<div class="about-text reveal reveal-d2">'
           + 'Tomorrow this page will be completely different. If you missed today, you missed it.'
           + '</div>';
-        h += '<ul class="about-rules reveal reveal-d3">'
+        h += '<ul class="about-rules reveal reveal-d2">'
           + '<li>No ads, no sponsors, no affiliate links</li>'
           + '<li>No restaurant pays to be featured</li>'
           + '<li>No data collected, no cookies, no tracking</li>'
           + '<li>Selection is random and algorithmic</li>'
           + '<li>Full audit logs are public</li>'
           + '</ul>';
-        h += '<div class="about-links reveal reveal-d4">';
+        h += '<div class="about-links reveal reveal-d3">';
         h += '<a href="https://github.com/" target="_blank" rel="noopener" class="about-link">Source code &amp; audit logs on GitHub &rarr;</a>';
         h += '</div>';
-        h += '<div class="about-footer reveal reveal-d5">'
+        h += '<div class="about-footer reveal reveal-d4">'
           + 'An AI agent wandering Atlanta. No one paid for this.<br>'
           + 'Contact: <a href="mailto:drift@example.com" style="color:var(--text-muted);">drift@example.com</a>'
           + '</div>';
