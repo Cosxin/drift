@@ -157,11 +157,6 @@
       margin-top: 1rem;
     }
 
-    .map-frame {
-      border: 1px solid var(--card-border);
-      overflow: hidden;
-    }
-
     .scroll-hint {
       position: absolute;
       bottom: 1.5rem;
@@ -597,13 +592,6 @@
         return la + '\u00B0' + (lat >= 0 ? 'N' : 'S') + '  ' + lo + '\u00B0' + (lng >= 0 ? 'E' : 'W');
       }
 
-      function photoHtml() {
-        return '<div class="map-frame" style="aspect-ratio:4/3;margin-top:2rem;">'
-          + '<img src="data/photo.jpg" alt="Restaurant photo" style="width:100%;height:100%;object-fit:cover;display:block;"'
-          + ' onerror="this.parentElement.style.display=\'none\';">'
-          + '</div>';
-      }
-
       /* ── Page 1: The Walk ──────────────────────────── */
 
       function buildPage1(data) {
@@ -804,11 +792,8 @@
 
         h += '</div>';
 
-        // Restaurant photo (from Places API or street view fallback)
-        h += '<div class="reveal reveal-d3">' + photoHtml() + '</div>';
-
         if (data.llm_judgment && data.llm_judgment.reasoning && data.llm_judgment.reasoning !== 'N/A') {
-          h += '<div class="reasoning reveal reveal-d4">'
+          h += '<div class="reasoning reveal reveal-d3">'
             + '<div class="reasoning-label">Why this one</div>'
             + esc(data.llm_judgment.reasoning) + '</div>';
         }
@@ -851,7 +836,7 @@
 
         sections.push({ id: 'page-walk', html: buildPage1(data) });
         if (isDiscovery) {
-          sections.push({ id: 'page-discovery', html: buildPage2(data), scrollable: true });
+          sections.push({ id: 'page-discovery', html: buildPage2(data) });
         }
         sections.push({ id: 'page-about', html: buildPage3() });
 
