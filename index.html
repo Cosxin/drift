@@ -127,21 +127,7 @@
       letter-spacing: 0.05em;
     }
 
-    /* ── Walk body: two-column layout ──────────────── */
-
-    .walk-body {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 3rem;
-      align-items: start;
-    }
-
-    .walk-text {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .neighborhood-label {
+.neighborhood-label {
       font-family: var(--mono);
       font-size: 0.65rem;
       letter-spacing: 0.2em;
@@ -169,83 +155,9 @@
       margin-top: 1rem;
     }
 
-    /* ── Map / Street View placeholder ────────────── */
-
-    .walk-map {
-      position: relative;
-    }
-
     .map-frame {
       border: 1px solid var(--card-border);
       overflow: hidden;
-    }
-
-    .map-placeholder {
-      width: 100%;
-      aspect-ratio: 4 / 3;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Placeholder grid pattern — simulates a map */
-    .map-placeholder::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(var(--card-border) 1px, transparent 1px),
-        linear-gradient(90deg, var(--card-border) 1px, transparent 1px);
-      background-size: 40px 40px;
-      opacity: 0.4;
-    }
-
-    .map-placeholder::after {
-      content: '';
-      position: absolute;
-      width: 60%;
-      height: 1px;
-      background: var(--accent-dim);
-      top: 45%;
-      left: 20%;
-      opacity: 0.5;
-      transform: rotate(-12deg);
-    }
-
-    .map-pin {
-      position: relative;
-      z-index: 1;
-      width: 12px;
-      height: 12px;
-      background: var(--accent);
-      border-radius: 50%;
-      box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.15), 0 0 0 8px rgba(201, 168, 76, 0.07);
-    }
-
-    .map-coords {
-      position: relative;
-      z-index: 1;
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      color: var(--text-dim);
-      letter-spacing: 0.05em;
-    }
-
-    .map-label {
-      font-family: var(--mono);
-      font-size: 0.55rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      padding: 0.4rem 0.6rem;
-      background: var(--card-bg);
-      border-top: 1px solid var(--card-border);
     }
 
     .scroll-hint {
@@ -523,16 +435,7 @@
     @media (max-width: 700px) {
       .section { padding: 2rem 1.5rem; }
 
-      .walk-body {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-      }
-
-      .walk-map { order: -1; }
-
-      .map-placeholder { aspect-ratio: 16 / 9; }
-
-      .logo { font-size: 1.3rem; }
+.logo { font-size: 1.3rem; }
       .restaurant-name { font-size: 1.8rem; }
       .coordinates { font-size: 1rem; }
     }
@@ -594,22 +497,11 @@
         return la + '\u00B0' + (lat >= 0 ? 'N' : 'S') + '  ' + lo + '\u00B0' + (lng >= 0 ? 'E' : 'W');
       }
 
-      function mapHtml(lat, lng) {
-        if (lat != null && lng != null) {
-          // Use server-side generated Street View image, fall back to placeholder
-          return '<div class="map-frame" style="aspect-ratio:4/3;">'
-            + '<img src="data/streetview.jpg" alt="Street view" style="width:100%;height:100%;object-fit:cover;display:block;"'
-            + ' onerror="this.style.display=\'none\';this.parentElement.style.display=\'none\';">'
-            + '</div>'
-            + '<div class="map-label">Street view</div>';
-        }
-
-        var coordStr = (lat != null && lng != null) ? coordText(lat, lng) : '';
-        return '<div class="map-placeholder">'
-          + '<div class="map-pin"></div>'
-          + '<div class="map-coords">' + coordStr + '</div>'
-          + '</div>'
-          + '<div class="map-label">Street view</div>';
+      function photoHtml() {
+        return '<div class="map-frame" style="aspect-ratio:4/3;margin-top:2rem;">'
+          + '<img src="data/photo.jpg" alt="Restaurant photo" style="width:100%;height:100%;object-fit:cover;display:block;"'
+          + ' onerror="this.parentElement.style.display=\'none\';">'
+          + '</div>';
       }
 
       /* ── Page 1: The Walk ──────────────────────────── */
@@ -630,15 +522,10 @@
 
         // "What this is" intro text
         h += '<div class="about-text reveal reveal-d1" style="margin-bottom:2.5rem;">'
-          + 'An AI agent that wanders Atlanta. Every day it moves to a new neighborhood. '
-          + 'Most days, nothing happens. Some days it discovers a small, independent, family-owned restaurant and spotlights it here.'
+          + 'An AI agent that wanders Atlanta. Every few days it drifts a little further. '
+          + 'Each month it jumps to a new neighborhood. Some days it discovers a small, independent, family-owned restaurant and spotlights it here.'
           + '</div>';
 
-        // Two-column body
-        h += '<div class="walk-body">';
-
-        // Left: text
-        h += '<div class="walk-text">';
         h += '<div class="neighborhood-label reveal reveal-d2">' + nbr + '</div>';
         if (lat != null && lng != null) {
           h += '<div class="coordinates reveal reveal-d3">' + coordHtml(lat, lng) + '</div>';
@@ -646,14 +533,6 @@
         if (!sel) {
           h += '<div class="nothing-marker reveal reveal-d3">Nothing today.</div>';
         }
-        h += '</div>';
-
-        // Right: map
-        h += '<div class="walk-map reveal reveal-d3">';
-        h += mapHtml(lat, lng);
-        h += '</div>';
-
-        h += '</div>'; // walk-body
         h += '</div>'; // section-inner
 
         if (sel) {
@@ -703,8 +582,11 @@
 
         h += '</div>';
 
+        // Restaurant photo (from Places API or street view fallback)
+        h += '<div class="reveal reveal-d3">' + photoHtml() + '</div>';
+
         if (data.llm_judgment && data.llm_judgment.reasoning && data.llm_judgment.reasoning !== 'N/A') {
-          h += '<div class="reasoning reveal reveal-d3">'
+          h += '<div class="reasoning reveal reveal-d4">'
             + '<div class="reasoning-label">Why this one</div>'
             + esc(data.llm_judgment.reasoning) + '</div>';
         }

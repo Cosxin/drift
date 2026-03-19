@@ -25,6 +25,7 @@ Requires:
 """
 
 import json
+import math
 import random
 import sys
 import os
@@ -169,10 +170,116 @@ def is_chain(name: str) -> bool:
     return False
 
 
+# ── Drift State Management ───────────────────────────────────────────────
+
+DRIFT_STATE_FILE = "data/drift_state.json"
+
+# ~1km total drift per month. With runs every 3 days (~10 runs/month),
+# each step is ~100m. In degrees: 100m ≈ 0.0009° lat, ~0.0011° lng at Atlanta's latitude.
+DRIFT_STEP_DEG = 0.001  # ~100m per step
+
+
+def geocode_neighborhood(neighborhood: str, api_key: str) -> tuple[float, float] | None:
+    """Geocode a neighborhood name to lat/lng using Google Geocoding API."""
+    import requests
+
+    url = "https://maps.googleapis.com/maps/api/geocode/json"
+    params = {"address": neighborhood, "key": api_key}
+    try:
+        response = requests.get(url, params=params, timeout=15)
+        if response.status_code == 200:
+            results = response.json().get("results", [])
+            if results:
+                loc = results[0]["geometry"]["location"]
+                return loc["lat"], loc["lng"]
+    except Exception as e:
+        print(f"  [WARN] Geocoding failed: {e}")
+    return None
+
+
+def load_drift_state() -> dict | None:
+    """Load the current drift state from disk."""
+    path = Path(DRIFT_STATE_FILE)
+    if path.exists():
+        try:
+            with open(path) as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return None
+
+
+def save_drift_state(state: dict):
+    """Save drift state to disk."""
+    Path(DRIFT_STATE_FILE).parent.mkdir(parents=True, exist_ok=True)
+    with open(DRIFT_STATE_FILE, "w") as f:
+        json.dump(state, f, indent=2)
+
+
+def get_drift_position(neighborhood_pool: list[str], api_key: str) -> tuple[str, float, float]:
+    """
+    Determine the search position using drift logic:
+    - New month → jump to a random neighborhood (big move)
+    - Same month → drift ~100m from last position (small move)
+
+    Returns (neighborhood_name, lat, lng).
+    """
+    now = datetime.now(timezone.utc)
+    current_month = now.strftime("%Y-%m")
+
+    state = load_drift_state()
+
+    # Check if we need a new month jump
+    if state is None or state.get("month") != current_month:
+        # New month: pick a random neighborhood and geocode it
+        neighborhood = random.choice(neighborhood_pool)
+        print(f"\n  New month ({current_month}) — jumping to: {neighborhood}")
+        coords = geocode_neighborhood(neighborhood, api_key)
+        if coords:
+            lat, lng = coords
+        else:
+            # Fallback: Atlanta center
+            print("  [WARN] Geocoding failed, using Atlanta center.")
+            lat, lng = 33.749, -84.388
+            neighborhood = "Downtown Atlanta, GA"
+
+        state = {
+            "month": current_month,
+            "neighborhood": neighborhood,
+            "base_lat": lat,
+            "base_lng": lng,
+            "current_lat": lat,
+            "current_lng": lng,
+            "step_count": 0,
+        }
+        save_drift_state(state)
+        return neighborhood, lat, lng
+
+    # Same month: drift from current position
+    prev_lat = state["current_lat"]
+    prev_lng = state["current_lng"]
+
+    # Random direction, fixed step size
+    angle = random.uniform(0, 2 * math.pi)
+    new_lat = prev_lat + DRIFT_STEP_DEG * math.sin(angle)
+    new_lng = prev_lng + DRIFT_STEP_DEG * math.cos(angle)
+
+    state["current_lat"] = new_lat
+    state["current_lng"] = new_lng
+    state["step_count"] = state.get("step_count", 0) + 1
+    save_drift_state(state)
+
+    neighborhood = state["neighborhood"]
+    print(f"\n  Drifting within {neighborhood} (step {state['step_count']})")
+    print(f"  Position: {new_lat:.4f}, {new_lng:.4f}")
+    return neighborhood, new_lat, new_lng
+
+
 # ── Google Places API (New) ──────────────────────────────────────────────
 
-def search_restaurants_google(neighborhood: str, api_key: str) -> list[dict]:
-    """Search Google Places API (New) for restaurants in a neighborhood."""
+def search_restaurants_google(neighborhood: str, api_key: str,
+                              lat: float | None = None, lng: float | None = None) -> list[dict]:
+    """Search Google Places API (New) for restaurants, optionally biased to a location."""
     import requests
 
     url = "https://places.googleapis.com/v1/places:searchText"
@@ -197,6 +304,15 @@ def search_restaurants_google(neighborhood: str, api_key: str) -> list[dict]:
         "includedType": "restaurant",
         "languageCode": "en",
     }
+
+    # Use location bias if coordinates are provided (drift mode)
+    if lat is not None and lng is not None:
+        body["locationBias"] = {
+            "circle": {
+                "center": {"latitude": lat, "longitude": lng},
+                "radius": 1000.0,  # 1km radius
+            }
+        }
 
     response = requests.post(url, headers=headers, json=body)
 
@@ -564,7 +680,7 @@ def select_llm(candidates: list[dict], llm_api_key: str,
 def run_selection(city_key: str, api_key: str, mode: str = "random",
                   llm_api_key: str = "", llm_provider: str = "anthropic",
                   max_retries: int = 5) -> dict | None:
-    """Full pipeline: geo → prefilter → select."""
+    """Full pipeline: drift → geo → prefilter → select."""
     city = CITIES.get(city_key)
     if not city:
         print(f"Unknown city: {city_key}")
@@ -574,22 +690,25 @@ def run_selection(city_key: str, api_key: str, mode: str = "random",
     min_rev = city["min_reviews"]
     max_rev = city["max_reviews"]
 
-    retry_pool = list(neighborhoods)
-    random.shuffle(retry_pool)
+    # Get drift position (handles monthly jumps and within-month drift)
+    drift_nbr, drift_lat, drift_lng = get_drift_position(neighborhoods, api_key)
 
-    for attempt in range(min(max_retries, len(retry_pool))):
-        neighborhood = retry_pool[attempt]
-        print(f"\n[Attempt {attempt + 1}] Searching: {neighborhood}")
+    for attempt in range(max_retries):
+        neighborhood = drift_nbr
+        print(f"\n[Attempt {attempt + 1}] Searching near: {neighborhood} ({drift_lat:.4f}, {drift_lng:.4f})")
 
         # Phase 1
-        raw_results = search_restaurants_google(neighborhood, api_key)
+        raw_results = search_restaurants_google(neighborhood, api_key, drift_lat, drift_lng)
         print(f"  Found {len(raw_results)} raw results from Google")
 
         candidates = prefilter_candidates(raw_results, min_rev, max_rev, target_count=10)
         print(f"  {len(candidates)} candidates after prefilter")
 
         if not candidates:
-            print(f"  No candidates, retrying...")
+            print(f"  No candidates, retrying with wider search...")
+            # Widen: shift position slightly and retry
+            drift_lat += random.uniform(-0.005, 0.005)
+            drift_lng += random.uniform(-0.005, 0.005)
             continue
 
         print(f"\n  Phase 2 candidates:")
@@ -681,14 +800,39 @@ def enrich_selection(record: dict, api_key: str) -> dict:
     return record
 
 
-def download_streetview(record: dict, api_key: str, output_dir: str = "data") -> str | None:
-    """Download a Street View image for the selected restaurant."""
+def download_place_photo(record: dict, api_key: str, output_dir: str = "data") -> str | None:
+    """Download a business photo from Places API. Falls back to Street View."""
     import requests
 
     sel = record.get("selected", {})
+    photo_refs = sel.get("photo_refs", [])
+
+    # Try Places API photo first
+    for ref in photo_refs:
+        if not ref:
+            continue
+        url = f"https://places.googleapis.com/v1/{ref}/media"
+        params = {"maxHeightPx": 800, "maxWidthPx": 1200, "key": api_key}
+        print(f"\nDownloading Places photo: {ref[:60]}...")
+        try:
+            response = requests.get(url, params=params, timeout=30)
+            content_type = response.headers.get("Content-Type", "")
+            if response.status_code == 200 and "image" in content_type:
+                Path(output_dir).mkdir(parents=True, exist_ok=True)
+                filepath = Path(output_dir) / "photo.jpg"
+                with open(filepath, "wb") as f:
+                    f.write(response.content)
+                print(f"  Places photo saved: {filepath}")
+                return str(filepath)
+            else:
+                print(f"  [WARN] Places photo HTTP {response.status_code}, trying next...")
+        except Exception as e:
+            print(f"  [WARN] Places photo failed: {e}, trying next...")
+
+    # Fall back to Street View
     lat, lng = sel.get("lat"), sel.get("lng")
     if lat is None or lng is None:
-        print("  [WARN] No coordinates, skipping Street View download.")
+        print("  [WARN] No coordinates and no photos, skipping image download.")
         return None
 
     url = "https://maps.googleapis.com/maps/api/streetview"
@@ -701,26 +845,20 @@ def download_streetview(record: dict, api_key: str, output_dir: str = "data") ->
         "key": api_key,
     }
 
-    print(f"\nDownloading Street View image for {lat},{lng}...")
+    print(f"\nFalling back to Street View for {lat},{lng}...")
     try:
         response = requests.get(url, params=params, timeout=30)
-        if response.status_code != 200:
+        content_type = response.headers.get("Content-Type", "")
+        if response.status_code == 200 and "image" in content_type:
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
+            filepath = Path(output_dir) / "photo.jpg"
+            with open(filepath, "wb") as f:
+                f.write(response.content)
+            print(f"  Street View saved: {filepath}")
+            return str(filepath)
+        else:
             print(f"  [WARN] Street View API HTTP {response.status_code}")
             return None
-
-        # Check if we got an actual image (not an error placeholder)
-        content_type = response.headers.get("Content-Type", "")
-        if "image" not in content_type:
-            print(f"  [WARN] Street View returned non-image: {content_type}")
-            return None
-
-        Path(output_dir).mkdir(parents=True, exist_ok=True)
-        filepath = Path(output_dir) / "streetview.jpg"
-        with open(filepath, "wb") as f:
-            f.write(response.content)
-        print(f"  Street View saved: {filepath}")
-        return str(filepath)
-
     except Exception as e:
         print(f"  [WARN] Street View download failed: {e}")
         return None
@@ -823,11 +961,11 @@ def main():
                 if j.get("excluded_indices"):
                     print(f"LLM excluded:  {len(j['excluded_indices'])} candidate(s)")
 
-            download_streetview(record, args.api_key)
+            download_place_photo(record, args.api_key)
 
             save_audit_log(record, args.log_dir)
 
-            current_path = Path(args.log_dir) / "current.json"
+            current_path = Path("data") / "current.json"
             with open(current_path, "w") as f:
                 json.dump(record, f, indent=2, ensure_ascii=False)
             print(f"Current pick: {current_path}")
