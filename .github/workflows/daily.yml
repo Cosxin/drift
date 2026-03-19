@@ -43,19 +43,19 @@ jobs:
         run: cp audit_log/current.json data/current.json
 
       - name: Archive today's HTML snapshot
-        env:
-          GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
         run: |
           mkdir -p html_archive
-          # Create a self-contained snapshot with the API key baked in
-          sed "s|STREETVIEW_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY'|STREETVIEW_API_KEY = '${GOOGLE_PLACES_API_KEY}'|" \
-            index.html > "html_archive/$(date -u +%Y-%m-%d).html"
+          cp index.html "html_archive/$(date -u +%Y-%m-%d).html"
+          # Include the streetview image alongside the HTML
+          if [ -f data/streetview.jpg ]; then
+            cp data/streetview.jpg "html_archive/$(date -u +%Y-%m-%d).jpg"
+          fi
 
       - name: Commit and push
         run: |
           git config user.name "blind-bot"
           git config user.email "blind-bot@users.noreply.github.com"
-          git add data/current.json audit_log/ html_archive/
+          git add data/current.json data/streetview.jpg audit_log/ html_archive/
           git diff --cached --quiet && echo "No changes" && exit 0
           git commit -m "Daily selection: $(date -u +%Y-%m-%d)"
           git push

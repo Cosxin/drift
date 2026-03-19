@@ -573,8 +573,6 @@
   </div>
 
   <script>
-    var STREETVIEW_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY';
-
     (function () {
       /* ── Helpers ────────────────────────────────────── */
 
@@ -612,19 +610,19 @@
       }
 
       function mapHtml(lat, lng) {
-        var hasKey = STREETVIEW_API_KEY !== 'YOUR_GOOGLE_MAPS_API_KEY';
-
-        if (hasKey && lat != null && lng != null) {
-          // Real Street View embed
-          var src = 'https://www.google.com/maps/embed/v1/streetview?key=' + STREETVIEW_API_KEY
-            + '&location=' + lat + ',' + lng + '&heading=210&pitch=5&fov=90';
+        if (lat != null && lng != null) {
+          // Use server-side generated Street View image
           return '<div class="map-frame" style="aspect-ratio:4/3;">'
-            + '<iframe src="' + src + '" loading="lazy" allowfullscreen title="Street view"></iframe>'
+            + '<img src="data/streetview.jpg" alt="Street view" style="width:100%;height:100%;object-fit:cover;display:block;"'
+            + ' onerror="this.parentElement.outerHTML=fallbackMap(' + lat + ',' + lng + ')">'
             + '</div>'
             + '<div class="map-label">Street view</div>';
         }
 
-        // Placeholder with grid pattern and pin
+        return fallbackMap(lat, lng);
+      }
+
+      function fallbackMap(lat, lng) {
         var coordStr = (lat != null && lng != null) ? coordText(lat, lng) : '';
         return '<div class="map-placeholder">'
           + '<div class="map-pin"></div>'

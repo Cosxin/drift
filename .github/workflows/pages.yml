@@ -24,12 +24,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Inject API key into index.html
-        env:
-          GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
-        run: |
-          sed -i "s|STREETVIEW_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY'|STREETVIEW_API_KEY = '${GOOGLE_PLACES_API_KEY}'|" index.html
-
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
