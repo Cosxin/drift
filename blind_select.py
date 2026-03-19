@@ -681,6 +681,51 @@ def enrich_selection(record: dict, api_key: str) -> dict:
     return record
 
 
+def download_streetview(record: dict, api_key: str, output_dir: str = "data") -> str | None:
+    """Download a Street View image for the selected restaurant."""
+    import requests
+
+    sel = record.get("selected", {})
+    lat, lng = sel.get("lat"), sel.get("lng")
+    if lat is None or lng is None:
+        print("  [WARN] No coordinates, skipping Street View download.")
+        return None
+
+    url = "https://maps.googleapis.com/maps/api/streetview"
+    params = {
+        "size": "800x600",
+        "location": f"{lat},{lng}",
+        "heading": "210",
+        "pitch": "5",
+        "fov": "90",
+        "key": api_key,
+    }
+
+    print(f"\nDownloading Street View image for {lat},{lng}...")
+    try:
+        response = requests.get(url, params=params, timeout=30)
+        if response.status_code != 200:
+            print(f"  [WARN] Street View API HTTP {response.status_code}")
+            return None
+
+        # Check if we got an actual image (not an error placeholder)
+        content_type = response.headers.get("Content-Type", "")
+        if "image" not in content_type:
+            print(f"  [WARN] Street View returned non-image: {content_type}")
+            return None
+
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
+        filepath = Path(output_dir) / "streetview.jpg"
+        with open(filepath, "wb") as f:
+            f.write(response.content)
+        print(f"  Street View saved: {filepath}")
+        return str(filepath)
+
+    except Exception as e:
+        print(f"  [WARN] Street View download failed: {e}")
+        return None
+
+
 # ── CLI ──────────────────────────────────────────────────────────────────
 
 def main():
@@ -777,6 +822,8 @@ def main():
                 print(f"\nLLM reasoning: {j.get('reasoning', 'N/A')}")
                 if j.get("excluded_indices"):
                     print(f"LLM excluded:  {len(j['excluded_indices'])} candidate(s)")
+
+            download_streetview(record, args.api_key)
 
             save_audit_log(record, args.log_dir)
 
