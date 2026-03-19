@@ -408,18 +408,18 @@
       font-size: 1.05rem;
       line-height: 1.9;
       color: var(--text);
-      margin-bottom: 1.75rem;
+      margin-bottom: 2.5rem;
     }
 
     .about-rules {
       list-style: none;
-      margin-bottom: 2.5rem;
+      margin-bottom: 3rem;
     }
 
     .about-rules li {
       font-size: 0.85rem;
       color: var(--text-muted);
-      padding: 0.35rem 0;
+      padding: 0.55rem 0;
       padding-left: 1rem;
       position: relative;
     }
@@ -457,8 +457,8 @@
     }
 
     .about-footer {
-      margin-top: 2.5rem;
-      padding-top: 1.5rem;
+      margin-top: 3rem;
+      padding-top: 2rem;
       border-top: 1px solid var(--card-border);
       font-size: 0.75rem;
       color: var(--text-dim);
@@ -792,11 +792,12 @@
 
         h += '</div>';
 
-        if (data.llm_judgment && data.llm_judgment.reasoning && data.llm_judgment.reasoning !== 'N/A') {
-          h += '<div class="reasoning reveal reveal-d3">'
-            + '<div class="reasoning-label">Why this one</div>'
-            + esc(data.llm_judgment.reasoning) + '</div>';
-        }
+        var reason = (data.llm_judgment && data.llm_judgment.reasoning && data.llm_judgment.reasoning !== 'N/A')
+          ? data.llm_judgment.reasoning
+          : 'There is something unreasonable about letting an algorithm choose where you eat — and something honest about it too. No craving guided this. No memory. Just proximity, chance, and the quiet logic of a machine that will never taste what it recommends. Maybe that\'s the point. The best meals often find you when you stop deciding.';
+        h += '<div class="reasoning reveal reveal-d3">'
+          + '<div class="reasoning-label">Why this one</div>'
+          + esc(reason) + '</div>';
 
         h += '</div>';
         return h;
@@ -807,22 +808,24 @@
       function buildPage3() {
         var h = '<div class="section-inner">';
         h += '<div class="about-title reveal">About</div>';
+
         h += '<div class="about-text reveal reveal-d1">'
-          + 'Tomorrow this page will be completely different. If you missed today, you missed it.'
+          + 'A new restaurant every day. If you missed today, you missed it.'
           + '</div>';
+
         h += '<ul class="about-rules reveal reveal-d2">'
-          + '<li>No ads, no sponsors, no affiliate links</li>'
-          + '<li>No restaurant pays to be featured</li>'
-          + '<li>No data collected, no cookies, no tracking</li>'
-          + '<li>Selection is random and algorithmic</li>'
-          + '<li>Full audit logs are public</li>'
+          + '<li>No ads, no tracking, no cookies</li>'
+          + '<li>No restaurant pays to appear</li>'
+          + '<li>Selection is algorithmic</li>'
           + '</ul>';
+
         h += '<div class="about-links reveal reveal-d3">';
-        h += '<a href="https://github.com/" target="_blank" rel="noopener" class="about-link">Source code &amp; audit logs on GitHub &rarr;</a>';
+        h += '<a href="https://github.com/" target="_blank" rel="noopener" class="about-link">GitHub &rarr;</a>';
         h += '</div>';
+
         h += '<div class="about-footer reveal reveal-d4">'
-          + 'An AI agent wandering Atlanta. No one paid for this.<br>'
-          + 'Contact: <a href="mailto:drift@example.com" style="color:var(--text-muted);">drift@example.com</a>'
+          + 'An AI agent wandering Atlanta.<br>'
+          + '<a href="mailto:tqlcos@gmail.com" style="color:var(--text-muted);">tqlcos@gmail.com</a>'
           + '</div>';
         h += '</div>';
         return h;
