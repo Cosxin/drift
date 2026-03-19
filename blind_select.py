@@ -174,9 +174,9 @@ def is_chain(name: str) -> bool:
 
 DRIFT_STATE_FILE = "data/drift_state.json"
 
-# ~1km total drift per month. With runs every 3 days (~10 runs/month),
-# each step is ~100m. In degrees: 100m ≈ 0.0009° lat, ~0.0011° lng at Atlanta's latitude.
-DRIFT_STEP_DEG = 0.001  # ~100m per step
+# With runs every 3 days (~10 runs/month), each step is ~500m.
+# In degrees: 500m ≈ 0.0045° at Atlanta's latitude.
+DRIFT_STEP_DEG = 0.005  # ~500m per step
 
 
 def geocode_neighborhood(neighborhood: str, api_key: str) -> tuple[float, float] | None:
