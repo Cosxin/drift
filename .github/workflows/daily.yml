@@ -1,9 +1,9 @@
-name: Drift — Daily Selection
+name: Drift — Selection (every 3 days)
 
 on:
   schedule:
-    # Runs daily at 2:17 PM UTC (10:17 AM ET)
-    - cron: '17 14 * * *'
+    # Runs every 3 days at 2:17 PM UTC (10:17 AM ET)
+    - cron: '17 14 */3 * *'
   workflow_dispatch:  # Allow manual trigger from GitHub UI
 
 permissions:
@@ -39,23 +39,19 @@ jobs:
             --llm-provider gemini \
             --log-dir audit_log
 
-      - name: Copy current.json to data/
-        run: cp audit_log/current.json data/current.json
-
       - name: Archive today's HTML snapshot
         run: |
           mkdir -p html_archive
           cp index.html "html_archive/$(date -u +%Y-%m-%d).html"
-          # Include the streetview image alongside the HTML
-          if [ -f data/streetview.jpg ]; then
-            cp data/streetview.jpg "html_archive/$(date -u +%Y-%m-%d).jpg"
+          if [ -f data/photo.jpg ]; then
+            cp data/photo.jpg "html_archive/$(date -u +%Y-%m-%d).jpg"
           fi
 
       - name: Commit and push
         run: |
           git config user.name "blind-bot"
           git config user.email "blind-bot@users.noreply.github.com"
-          git add data/current.json data/streetview.jpg audit_log/ html_archive/
+          git add data/current.json data/photo.jpg data/drift_state.json audit_log/ html_archive/
           git diff --cached --quiet && echo "No changes" && exit 0
-          git commit -m "Daily selection: $(date -u +%Y-%m-%d)"
+          git commit -m "Selection: $(date -u +%Y-%m-%d)"
           git push
