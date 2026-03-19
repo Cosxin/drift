@@ -150,13 +150,6 @@
       margin-bottom: 1.25rem;
     }
 
-    .observation {
-      font-size: 1.05rem;
-      line-height: 1.85;
-      color: var(--text);
-      margin-bottom: 1.75rem;
-    }
-
     .coordinates {
       font-family: var(--mono);
       font-size: 1.1rem;
@@ -185,13 +178,6 @@
     .map-frame {
       border: 1px solid var(--card-border);
       overflow: hidden;
-    }
-
-    .map-frame iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
     }
 
     .map-placeholder {
@@ -548,7 +534,6 @@
 
       .logo { font-size: 1.3rem; }
       .restaurant-name { font-size: 1.8rem; }
-      .observation { font-size: 1rem; }
       .coordinates { font-size: 1rem; }
     }
 
@@ -611,18 +596,14 @@
 
       function mapHtml(lat, lng) {
         if (lat != null && lng != null) {
-          // Use server-side generated Street View image
+          // Use server-side generated Street View image, fall back to placeholder
           return '<div class="map-frame" style="aspect-ratio:4/3;">'
             + '<img src="data/streetview.jpg" alt="Street view" style="width:100%;height:100%;object-fit:cover;display:block;"'
-            + ' onerror="this.parentElement.outerHTML=fallbackMap(' + lat + ',' + lng + ')">'
+            + ' onerror="this.style.display=\'none\';this.parentElement.style.display=\'none\';">'
             + '</div>'
             + '<div class="map-label">Street view</div>';
         }
 
-        return fallbackMap(lat, lng);
-      }
-
-      function fallbackMap(lat, lng) {
         var coordStr = (lat != null && lng != null) ? coordText(lat, lng) : '';
         return '<div class="map-placeholder">'
           + '<div class="map-pin"></div>'
@@ -635,8 +616,8 @@
 
       function buildPage1(data) {
         var sel = data.selected;
-        var lat = sel ? sel.lat : (data.walk_position ? data.walk_position.lat : null);
-        var lng = sel ? sel.lng : (data.walk_position ? data.walk_position.lng : null);
+        var lat = sel ? sel.lat : null;
+        var lng = sel ? sel.lng : null;
         var nbr = esc(data.neighborhood_searched || '');
 
         var h = '<div class="section-inner">';
@@ -659,17 +640,16 @@
         // Left: text
         h += '<div class="walk-text">';
         h += '<div class="neighborhood-label reveal reveal-d2">' + nbr + '</div>';
-        h += '<div class="observation reveal reveal-d3">' + esc(data.observation || '') + '</div>';
         if (lat != null && lng != null) {
-          h += '<div class="coordinates reveal reveal-d4">' + coordHtml(lat, lng) + '</div>';
+          h += '<div class="coordinates reveal reveal-d3">' + coordHtml(lat, lng) + '</div>';
         }
         if (!sel) {
-          h += '<div class="nothing-marker reveal reveal-d4">Nothing today.</div>';
+          h += '<div class="nothing-marker reveal reveal-d3">Nothing today.</div>';
         }
         h += '</div>';
 
         // Right: map
-        h += '<div class="walk-map reveal reveal-d4">';
+        h += '<div class="walk-map reveal reveal-d3">';
         h += mapHtml(lat, lng);
         h += '</div>';
 
