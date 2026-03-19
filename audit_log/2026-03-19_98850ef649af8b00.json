@@ -1,0 +1,87 @@
+{
+  "selection_id": "98850ef649af8b00",
+  "timestamp": "2026-03-19T03:27:10.361077+00:00",
+  "city": "Atlanta, GA",
+  "neighborhood_searched": "Poncey-Highland Atlanta, GA",
+  "search_params": {
+    "min_reviews": 5,
+    "max_reviews": 300,
+    "min_rating": 3.5
+  },
+  "selection_mode": "llm",
+  "raw_result_count": 20,
+  "candidate_count": 2,
+  "all_candidates": [
+    {
+      "name": "Southern Belle",
+      "address": "1043 Ponce De Leon Ave NE, Atlanta, GA 30306, USA",
+      "review_count": 248,
+      "rating": 4.6,
+      "types": [
+        "restaurant",
+        "point_of_interest",
+        "food",
+        "establishment"
+      ],
+      "primary_type": "restaurant"
+    },
+    {
+      "name": "Georgia Boy",
+      "address": "1043 Ponce De Leon Ave NE, Atlanta, GA 30306, USA",
+      "review_count": 134,
+      "rating": 4.5,
+      "types": [
+        "restaurant",
+        "point_of_interest",
+        "food",
+        "establishment"
+      ],
+      "primary_type": "restaurant"
+    }
+  ],
+  "selected": {
+    "name": "Georgia Boy",
+    "address": "1043 Ponce De Leon Ave NE, Atlanta, GA 30306, USA",
+    "rating": 4.5,
+    "review_count": 134,
+    "place_id": "ChIJKxidTKcG9YgRQSFm1vgTz_I",
+    "lat": 33.7734005,
+    "lng": -84.3532352,
+    "price_level": null,
+    "types": [
+      "restaurant",
+      "point_of_interest",
+      "food",
+      "establishment"
+    ],
+    "primary_type": "restaurant",
+    "phone": "(404) 698-3961",
+    "website": "https://www.georgiaboyatl.com/",
+    "google_maps_url": "https://maps.google.com/?cid=17496225036827500865&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+    "hours": [
+      "Monday: Closed",
+      "Tuesday: Closed",
+      "Wednesday: Closed",
+      "Thursday: 5:30 – 9:00 PM",
+      "Friday: 5:30 – 9:00 PM",
+      "Saturday: 5:30 – 9:00 PM",
+      "Sunday: Closed"
+    ],
+    "editorial_summary": null,
+    "photo_refs": [
+      "places/ChIJKxidTKcG9YgRQSFm1vgTz_I/photos/ATCDNfUxVnx5pvkgUN7qAnFms7Inaib5E2oVrDW-wVN7kdXN346Y-eDCQKUtsudv47hS2W34tw2q3q5D-G2LLnBzMt6IrgDdLEdBnVQnpYTx4_KoeCw5EEGa5WsLzUGX-I01q6orPcd9EqSm22pK_1eo4awdAdyuvig9BtI_xSWgVTFL8Adtez2g2tmSNtXXDtblBdhnqZyPjXoCVeLnKfQOQm29xezJv0FcFdi-5fDNweMTjfHKZDUGRmr-kYSJf-o5f0vc4la_RShpNQ4_-0bl2LmUKI4qaaXYEuf1dBJIK3wmcQ",
+      "places/ChIJKxidTKcG9YgRQSFm1vgTz_I/photos/ATCDNfX_Y9GtuLNFj-IIi-ftfL7tJ_x0gbelupB4fyRu0gLQ0dgzHr5x6QjCv9oy-3RXB1LoDGdfmIEZv-9m7RM4K_3DWROxoqZw7bZjuANZU8TEZJnNcNFCNPKX5Ip_WksdNDu9XkqMCrWUQmyJe7gmMZK7qwkR0uqNVtu33LvtXB3LrljftDXIRWhyUOHLsrqtOmVFU13nwWxUAUEBa5sH2tpA6hgmeoYkTfRuloubeLzbTf-QR7E00KQ6MNj_AWBhO-lOJmOtltV5--nvMqFr3Tw6SO4qRQLFdS8J7Y6LceogvG8li89uXFc5QNJDpcSo_0o0VfWmlSJNnMRgweMc7wlTYqBGrKSpw72vpARx0SIHcGmDLjfaPmeFbP7oOYtCtn6ipr0DhR4BtrpsJ5dFiqTuMkqz35gd6UMZb5P-vpYidzFC",
+      "places/ChIJKxidTKcG9YgRQSFm1vgTz_I/photos/ATCDNfWmiZIbCiiQfoJKJOtenuBTXzJcB9hSKO-yyrzLsGk8eOCIkQclyfpiGSrH9WE_llrELVMyByfw1vBVfp-RsTk2KbGlB6ePBLo5E0TV7v5zEHitkU-VaEbqoCyAMdoYzVm4cvfbvLFl0La0bslzYtkIQ069GHGB_A2efaJk8t4hJ8xxWK7hvzYYPAfT5O_D-vK3g0T8oH_y1zvveJ_EvHejH3471cil07i9vg-M5xml_AGNFT1TAtT0fZKf1t0tMQTC_mPp1oeYb86fyyZRpFIEnuAZDRlLpksfvBXsrz_MMr-JjRh92ZhU-TuhCq8Th8kSoUnNnh3Yl3htr3LX7-WIdfo5aJMOB7ABYiowiJUDLHmPGPD_-B7-_7YHwXpQJUaGQV-Gsbf_dZUhbhG7TPIQLS5RBJ-RRTDt7ISUrZIo9gL4hvN6jd7SLZAffCCu",
+      "places/ChIJKxidTKcG9YgRQSFm1vgTz_I/photos/ATCDNfWpliYN_kddLKjuhRXMQ53GsdUs8mZ6N3rgPyd03l_O7P0OT7lIZu9_9buATzlCg5bq6fRdiOPWAipoLT1Drx9MPO0WUZSX1l6GCzzSZjJkGA_gRRKSgwVgMYmJPGsLTDgrrD-7XkBHPeaUuXd1nyq0HumNP2D6G3wDZYOIsZvlIrkixHBvymkh8V6bPV2sbnTI5zwkfYurOr0nE4mm-eTWK9ZChRzZ6t2LsdRint8m2pOzAIHnGr6KVzSIx0nn04c7UeKaJbz_Kc3KoX632yVYiOaMg7DrLgWJvmbU6kI_WTmi0dJZAqYFzRv-AbiYUoGhhC3UB1V6GRNG_tXXLf7rfpB--3TViejSKOwzsI_vI5hOJkkVUNNnXsWPzbM4bLi_g8JoG5L0fPURk1_BC7VgXpp-kTB_J13kiUAyV-Tj5xpR_T4s9f3yG5QkQYUU",
+      "places/ChIJKxidTKcG9YgRQSFm1vgTz_I/photos/ATCDNfXKE12StqlAj7OJwIN4xWG2y92GbS_0zh6Lo-wTOVXR8BgFfikyMy89io0iBgoZsoX_sSzkgsXuvuxXCUO2TbIzCeJEi6Cwe7d1Q8mofChS6F7LdwqTwvI5GMmFZ2I-1kOhgY-Jph6CWoNfWxOpzq201yCsgh3nWmaB24leMZUUZYvpP2FiXuQniG_UaDxNfwhXUWb8ZokRtuLFC2__1U0f_fTxVIReBfe5A99V1BuWHJm1B3Jvy-RyaCsM-4ZoxBYWZ8g7EDtokMu6iasCTfW59X4-ToQqkmfNYmJlnGzPsBa8abZux3YXOFdGIHRv78RX1-sU061CLdJWe4iJHj6wfjtHvBpJkZ_msuZ853B0_KDSxIk3HmKzcZx__5AZ9g83--MVjy7sAWPXpPEQJ9JuXBsSM37GHd8tcwb88sD_tmhP"
+    ]
+  },
+  "attempt_number": 1,
+  "llm_judgment": {
+    "selected_index": 1,
+    "selected_name": "Georgia Boy",
+    "reasoning": "N/A",
+    "parse_note": "extracted via regex fallback"
+  },
+  "llm_provider": "gemini"
+}

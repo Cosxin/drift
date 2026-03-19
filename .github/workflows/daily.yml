@@ -1,0 +1,52 @@
+name: Drift — Daily Selection
+
+on:
+  schedule:
+    # Runs daily at 2:17 PM UTC (10:17 AM ET)
+    - cron: '17 14 * * *'
+  workflow_dispatch:  # Allow manual trigger from GitHub UI
+
+permissions:
+  contents: write
+
+jobs:
+  select:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run selection script
+        env:
+          GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+        run: |
+          python blind_select.py \
+            --city atlanta \
+            --api-key "$GOOGLE_PLACES_API_KEY" \
+            --pick \
+            --mode llm \
+            --llm-api-key "$LLM_API_KEY" \
+            --llm-provider gemini \
+            --log-dir audit_log
+
+      - name: Copy current.json to data/
+        run: cp audit_log/current.json data/current.json
+
+      - name: Commit and push
+        run: |
+          git config user.name "blind-bot"
+          git config user.email "blind-bot@users.noreply.github.com"
+          git add data/current.json audit_log/
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "Daily selection: $(date -u +%Y-%m-%d)"
+          git push

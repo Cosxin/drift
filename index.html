@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drift</title>
+  <style>
+    /* ── Reset & Variables ──────────────────────────── */
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #080808;
+      --bg-alt: #0b0b0a;
+      --text: #d8d0c4;
+      --text-muted: #6b6560;
+      --text-dim: #3d3a36;
+      --accent: #c9a84c;
+      --accent-dim: #8a7435;
+      --card-bg: #0f0f0e;
+      --card-border: #1e1d1a;
+      --serif: 'Georgia', 'Times New Roman', serif;
+      --mono: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    }
+
+    html {
+      font-size: 17px;
+      scroll-snap-type: y mandatory;
+      overflow-y: scroll;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--serif);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── Film Grain ─────────────────────────────────── */
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 256px 256px;
+    }
+
+    /* ── Section: fullPage-style panels ────────────── */
+
+    .section {
+      height: 100vh;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 2rem 2.5rem;
+      position: relative;
+    }
+
+    .section.section-scroll {
+      overflow-y: auto;
+      justify-content: flex-start;
+      padding-top: 5rem;
+      padding-bottom: 4rem;
+    }
+
+    .section-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* ── Scroll-reveal ──────────────────────────────── */
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-d1 { transition-delay: 0.1s; }
+    .reveal-d2 { transition-delay: 0.25s; }
+    .reveal-d3 { transition-delay: 0.4s; }
+    .reveal-d4 { transition-delay: 0.55s; }
+    .reveal-d5 { transition-delay: 0.7s; }
+
+    /* ── Page 1: The Walk ───────────────────────────── */
+
+    #page-walk {
+      background: var(--bg);
+    }
+
+    .walk-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .logo {
+      font-family: var(--serif);
+      font-size: 1.6rem;
+      letter-spacing: 0.12em;
+      color: #fff;
+      font-weight: 400;
+    }
+
+    .date {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Walk body: two-column layout ──────────────── */
+
+    .walk-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+
+    .walk-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .neighborhood-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent-dim);
+      margin-bottom: 1.25rem;
+    }
+
+    .observation {
+      font-size: 1.05rem;
+      line-height: 1.85;
+      color: var(--text);
+      margin-bottom: 1.75rem;
+    }
+
+    .coordinates {
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      color: var(--accent);
+      letter-spacing: 0.06em;
+      line-height: 1.3;
+    }
+
+    .coordinates .deg { color: var(--accent-dim); }
+    .coordinates .sep { display: inline-block; width: 1rem; }
+
+    .nothing-marker {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      margin-top: 1rem;
+    }
+
+    /* ── Map / Street View placeholder ────────────── */
+
+    .walk-map {
+      position: relative;
+    }
+
+    .map-frame {
+      border: 1px solid var(--card-border);
+      overflow: hidden;
+    }
+
+    .map-frame iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    .map-placeholder {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Placeholder grid pattern — simulates a map */
+    .map-placeholder::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--card-border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--card-border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.4;
+    }
+
+    .map-placeholder::after {
+      content: '';
+      position: absolute;
+      width: 60%;
+      height: 1px;
+      background: var(--accent-dim);
+      top: 45%;
+      left: 20%;
+      opacity: 0.5;
+      transform: rotate(-12deg);
+    }
+
+    .map-pin {
+      position: relative;
+      z-index: 1;
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.15), 0 0 0 8px rgba(201, 168, 76, 0.07);
+    }
+
+    .map-coords {
+      position: relative;
+      z-index: 1;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+    }
+
+    .map-label {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 0.4rem 0.6rem;
+      background: var(--card-bg);
+      border-top: 1px solid var(--card-border);
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+
+    .scroll-hint::after {
+      content: '';
+      display: block;
+      width: 1px;
+      height: 20px;
+      background: var(--text-dim);
+      margin: 0.4rem auto 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.7; }
+    }
+
+    /* ── Page 2: Discovery ──────────────────────────── */
+
+    #page-discovery {
+      background: var(--bg-alt);
+    }
+
+    #page-discovery .section-inner {
+      max-width: 640px;
+    }
+
+    .discovery-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+
+    .restaurant-name {
+      font-size: 2.4rem;
+      font-weight: 400;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 0.4rem;
+    }
+
+    .restaurant-address {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    .divider {
+      width: 40px;
+      height: 1px;
+      background: var(--accent-dim);
+      margin-bottom: 2rem;
+    }
+
+    .restaurant-meta {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .meta-row {
+      display: flex;
+      gap: 1rem;
+      align-items: baseline;
+    }
+
+    .meta-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      min-width: 70px;
+      flex-shrink: 0;
+    }
+
+    .meta-value {
+      font-size: 0.9rem;
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .meta-value a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .meta-value a:hover { text-decoration: underline; }
+
+    .rating-stars { color: var(--accent); }
+
+    .hours-grid {
+      font-size: 0.85rem;
+      line-height: 1.7;
+    }
+
+    .hours-grid .closed { color: var(--text-muted); }
+
+    .reasoning {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-style: italic;
+      border-top: 1px solid var(--card-border);
+      padding-top: 1.5rem;
+      margin-top: 0.5rem;
+      line-height: 1.8;
+    }
+
+    .reasoning-label {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent-dim);
+      font-style: normal;
+      margin-bottom: 0.5rem;
+    }
+
+    /* ── Page 3: About ──────────────────────────────── */
+
+    #page-about {
+      background: var(--bg);
+    }
+
+    #page-about .section-inner {
+      max-width: 580px;
+    }
+
+    .about-title {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent-dim);
+      margin-bottom: 2rem;
+    }
+
+    .about-text {
+      font-size: 1.05rem;
+      line-height: 1.9;
+      color: var(--text);
+      margin-bottom: 1.75rem;
+    }
+
+    .about-rules {
+      list-style: none;
+      margin-bottom: 2.5rem;
+    }
+
+    .about-rules li {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      padding: 0.35rem 0;
+      padding-left: 1rem;
+      position: relative;
+    }
+
+    .about-rules li::before {
+      content: '\2014';
+      position: absolute;
+      left: 0;
+      color: var(--text-dim);
+    }
+
+    .about-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .about-link {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      transition: border-color 0.2s, color 0.2s;
+      width: fit-content;
+    }
+
+    .about-link:hover {
+      border-color: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    .about-footer {
+      margin-top: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--card-border);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* ── Page indicators ────────────────────────────── */
+
+    .page-dots {
+      position: fixed;
+      right: 1.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      z-index: 100;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      transition: background 0.3s, transform 0.3s;
+      cursor: pointer;
+      border: none;
+      padding: 0;
+    }
+
+    .dot.active {
+      background: var(--accent);
+      transform: scale(1.4);
+    }
+
+    /* ── Noscript ──────────────────────────────────── */
+
+    noscript .noscript-msg {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+
+    /* ── Loading ────────────────────────────────────── */
+
+    .loading-screen {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── Responsive ─────────────────────────────────── */
+
+    @media (max-width: 700px) {
+      .section { padding: 2rem 1.5rem; }
+
+      .walk-body {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .walk-map { order: -1; }
+
+      .map-placeholder { aspect-ratio: 16 / 9; }
+
+      .logo { font-size: 1.3rem; }
+      .restaurant-name { font-size: 1.8rem; }
+      .observation { font-size: 1rem; }
+      .coordinates { font-size: 1rem; }
+    }
+
+    @media (max-width: 480px) {
+      html { font-size: 15px; }
+      .page-dots { right: 0.75rem; }
+      .dot { width: 5px; height: 5px; }
+    }
+  </style>
+</head>
+<body>
+
+  <noscript>
+    <div class="noscript-msg">
+      <p>Drift is an AI agent wandering Atlanta, discovering small independent restaurants.</p>
+      <p style="margin-top:1rem;">This site requires JavaScript to load today's data.</p>
+    </div>
+  </noscript>
+
+  <div id="app">
+    <div class="loading-screen" id="loading">...</div>
+  </div>
+
+  <script>
+    var STREETVIEW_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY';
+
+    (function () {
+      /* ── Helpers ────────────────────────────────────── */
+
+      function esc(s) {
+        if (!s) return '';
+        var el = document.createElement('span');
+        el.textContent = s;
+        return el.innerHTML;
+      }
+
+      function formatDate(ts) {
+        try {
+          var d = new Date(ts);
+          var m = ['January','February','March','April','May','June',
+                   'July','August','September','October','November','December'];
+          return m[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+        } catch (e) { return ts ? ts.slice(0, 10) : ''; }
+      }
+
+      function stars(r) {
+        var f = Math.floor(r), h = (r - f >= 0.25) ? 1 : 0, e = 5 - f - h;
+        return '<span class="rating-stars">' + '\u2605'.repeat(f) + (h ? '\u00BD' : '') + '\u2606'.repeat(e) + '</span>';
+      }
+
+      function coordHtml(lat, lng) {
+        var la = Math.abs(lat).toFixed(4), lo = Math.abs(lng).toFixed(4);
+        return la + '<span class="deg">\u00B0</span>' + (lat >= 0 ? 'N' : 'S')
+          + '<span class="sep"></span>'
+          + lo + '<span class="deg">\u00B0</span>' + (lng >= 0 ? 'E' : 'W');
+      }
+
+      function coordText(lat, lng) {
+        var la = Math.abs(lat).toFixed(4), lo = Math.abs(lng).toFixed(4);
+        return la + '\u00B0' + (lat >= 0 ? 'N' : 'S') + '  ' + lo + '\u00B0' + (lng >= 0 ? 'E' : 'W');
+      }
+
+      function mapHtml(lat, lng) {
+        var hasKey = STREETVIEW_API_KEY !== 'YOUR_GOOGLE_MAPS_API_KEY';
+
+        if (hasKey && lat != null && lng != null) {
+          // Real Street View embed
+          var src = 'https://www.google.com/maps/embed/v1/streetview?key=' + STREETVIEW_API_KEY
+            + '&location=' + lat + ',' + lng + '&heading=210&pitch=5&fov=90';
+          return '<div class="map-frame" style="aspect-ratio:4/3;">'
+            + '<iframe src="' + src + '" loading="lazy" allowfullscreen title="Street view"></iframe>'
+            + '</div>'
+            + '<div class="map-label">Street view</div>';
+        }
+
+        // Placeholder with grid pattern and pin
+        var coordStr = (lat != null && lng != null) ? coordText(lat, lng) : '';
+        return '<div class="map-placeholder">'
+          + '<div class="map-pin"></div>'
+          + '<div class="map-coords">' + coordStr + '</div>'
+          + '</div>'
+          + '<div class="map-label">Street view</div>';
+      }
+
+      /* ── Page 1: The Walk ──────────────────────────── */
+
+      function buildPage1(data) {
+        var sel = data.selected;
+        var lat = sel ? sel.lat : (data.walk_position ? data.walk_position.lat : null);
+        var lng = sel ? sel.lng : (data.walk_position ? data.walk_position.lng : null);
+        var nbr = esc(data.neighborhood_searched || '');
+
+        var h = '<div class="section-inner">';
+
+        // Header
+        h += '<div class="walk-header reveal">';
+        h += '<div class="logo">Drift</div>';
+        h += '<div class="date">' + formatDate(data.timestamp) + '</div>';
+        h += '</div>';
+
+        // Two-column body
+        h += '<div class="walk-body">';
+
+        // Left: text
+        h += '<div class="walk-text">';
+        h += '<div class="neighborhood-label reveal reveal-d1">' + nbr + '</div>';
+        h += '<div class="observation reveal reveal-d2">' + esc(data.observation || '') + '</div>';
+        if (lat != null && lng != null) {
+          h += '<div class="coordinates reveal reveal-d3">' + coordHtml(lat, lng) + '</div>';
+        }
+        if (!sel) {
+          h += '<div class="nothing-marker reveal reveal-d3">Nothing today.</div>';
+        }
+        h += '</div>';
+
+        // Right: map
+        h += '<div class="walk-map reveal reveal-d3">';
+        h += mapHtml(lat, lng);
+        h += '</div>';
+
+        h += '</div>'; // walk-body
+        h += '</div>'; // section-inner
+
+        if (sel) {
+          h += '<div class="scroll-hint">scroll</div>';
+        }
+        return h;
+      }
+
+      /* ── Page 2: Discovery ─────────────────────────── */
+
+      function buildPage2(data) {
+        var sel = data.selected;
+        if (!sel) return '';
+
+        var h = '<div class="section-inner">';
+        h += '<div class="discovery-label reveal">Discovery</div>';
+        h += '<div class="restaurant-name reveal reveal-d1">' + esc(sel.name) + '</div>';
+        h += '<div class="restaurant-address reveal reveal-d1">' + esc(sel.address) + '</div>';
+        h += '<div class="divider reveal reveal-d2"></div>';
+        h += '<div class="restaurant-meta reveal reveal-d2">';
+
+        if (sel.rating) {
+          h += '<div class="meta-row"><span class="meta-label">Rating</span>'
+            + '<span class="meta-value">' + sel.rating + ' ' + stars(sel.rating)
+            + ' <span style="color:var(--text-muted);font-size:0.8rem;">(' + (sel.review_count || 0) + ')</span></span></div>';
+        }
+        if (sel.phone) {
+          h += '<div class="meta-row"><span class="meta-label">Phone</span>'
+            + '<span class="meta-value"><a href="tel:' + esc(sel.phone) + '">' + esc(sel.phone) + '</a></span></div>';
+        }
+        if (sel.website) {
+          var du = sel.website.replace(/^https?:\/\//, '').replace(/\/$/, '');
+          h += '<div class="meta-row"><span class="meta-label">Website</span>'
+            + '<span class="meta-value"><a href="' + esc(sel.website) + '" target="_blank" rel="noopener">' + esc(du) + '</a></span></div>';
+        }
+        if (sel.google_maps_url) {
+          h += '<div class="meta-row"><span class="meta-label">Maps</span>'
+            + '<span class="meta-value"><a href="' + esc(sel.google_maps_url) + '" target="_blank" rel="noopener">View on Google Maps</a></span></div>';
+        }
+        if (sel.hours && sel.hours.length) {
+          h += '<div class="meta-row" style="align-items:flex-start;"><span class="meta-label">Hours</span><span class="meta-value"><div class="hours-grid">';
+          sel.hours.forEach(function (hr) {
+            h += '<div' + (/closed/i.test(hr) ? ' class="closed"' : '') + '>' + esc(hr) + '</div>';
+          });
+          h += '</div></span></div>';
+        }
+
+        h += '</div>';
+
+        if (data.llm_judgment && data.llm_judgment.reasoning && data.llm_judgment.reasoning !== 'N/A') {
+          h += '<div class="reasoning reveal reveal-d3">'
+            + '<div class="reasoning-label">Why this one</div>'
+            + esc(data.llm_judgment.reasoning) + '</div>';
+        }
+
+        h += '</div>';
+        return h;
+      }
+
+      /* ── Page 3: About ─────────────────────────────── */
+
+      function buildPage3() {
+        var h = '<div class="section-inner">';
+        h += '<div class="about-title reveal">What is this</div>';
+        h += '<div class="about-text reveal reveal-d1">'
+          + 'An AI agent that wanders Atlanta. Every day it moves to a new neighborhood. '
+          + 'Most days, nothing happens. Some days it discovers a small, independent, family-owned restaurant and spotlights it here.'
+          + '</div>';
+        h += '<div class="about-text reveal reveal-d2">'
+          + 'Tomorrow this page will be completely different. If you missed today, you missed it.'
+          + '</div>';
+        h += '<ul class="about-rules reveal reveal-d3">'
+          + '<li>No ads, no sponsors, no affiliate links</li>'
+          + '<li>No restaurant pays to be featured</li>'
+          + '<li>No data collected, no cookies, no tracking</li>'
+          + '<li>Selection is random and algorithmic</li>'
+          + '<li>Full audit logs are public</li>'
+          + '</ul>';
+        h += '<div class="about-links reveal reveal-d4">';
+        h += '<a href="https://github.com/" target="_blank" rel="noopener" class="about-link">Source code &amp; audit logs on GitHub &rarr;</a>';
+        h += '</div>';
+        h += '<div class="about-footer reveal reveal-d5">'
+          + 'An AI agent wandering Atlanta. No one paid for this.<br>'
+          + 'Contact: <a href="mailto:drift@example.com" style="color:var(--text-muted);">drift@example.com</a>'
+          + '</div>';
+        h += '</div>';
+        return h;
+      }
+
+      /* ── Render ─────────────────────────────────────── */
+
+      function render(data) {
+        var isDiscovery = !!data.selected;
+        var sections = [];
+
+        sections.push({ id: 'page-walk', html: buildPage1(data) });
+        if (isDiscovery) {
+          sections.push({ id: 'page-discovery', html: buildPage2(data), scrollable: true });
+        }
+        sections.push({ id: 'page-about', html: buildPage3() });
+
+        var appHtml = '';
+
+        // Page dots
+        appHtml += '<nav class="page-dots" aria-label="Page navigation">';
+        sections.forEach(function (s, i) {
+          appHtml += '<button class="dot' + (i === 0 ? ' active' : '') + '" data-target="' + s.id + '" aria-label="Page ' + (i + 1) + '"></button>';
+        });
+        appHtml += '</nav>';
+
+        // Sections
+        sections.forEach(function (s) {
+          var cls = 'section' + (s.scrollable ? ' section-scroll' : '');
+          appHtml += '<section class="' + cls + '" id="' + s.id + '">' + s.html + '</section>';
+        });
+
+        document.getElementById('app').innerHTML = appHtml;
+
+        // Scroll-reveal
+        var reveals = document.querySelectorAll('.reveal');
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) entry.target.classList.add('visible');
+          });
+        }, { threshold: 0.15 });
+        reveals.forEach(function (el) { observer.observe(el); });
+
+        // Page dot updater
+        var dots = document.querySelectorAll('.dot');
+        var sectionEls = document.querySelectorAll('.section');
+        var dotObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              dots.forEach(function (d) { d.classList.remove('active'); });
+              var match = document.querySelector('.dot[data-target="' + entry.target.id + '"]');
+              if (match) match.classList.add('active');
+            }
+          });
+        }, { threshold: 0.5 });
+        sectionEls.forEach(function (el) { dotObserver.observe(el); });
+
+        // Dot click
+        dots.forEach(function (d) {
+          d.addEventListener('click', function () {
+            var target = document.getElementById(d.getAttribute('data-target'));
+            if (target) target.scrollIntoView({ behavior: 'smooth' });
+          });
+        });
+      }
+
+      /* ── Fetch ──────────────────────────────────────── */
+
+      fetch('data/current.json')
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(render)
+        .catch(function (e) {
+          document.getElementById('loading').textContent = 'Failed to load.';
+          console.error('Drift:', e);
+        });
+    })();
+  </script>
+</body>
+</html>

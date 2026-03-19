@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-03-19T14:30:00+00:00",
+  "city": "Atlanta, GA",
+  "neighborhood_searched": "Clarkston, GA",
+  "day_number": 5,
+  "observation": "A parking lot shared by a Laundromat and three restaurants with no signs in English. The Ethiopian place has a handwritten specials board propped against the door. A man is fixing a bicycle on the sidewalk. The air smells like berbere and exhaust.",
+  "selected": {
+    "name": "Kathmandu Kitchen",
+    "address": "3871 Church St, Clarkston, GA 30021",
+    "rating": 4.4,
+    "review_count": 89,
+    "lat": 33.8095,
+    "lng": -84.2399,
+    "phone": "(404) 555-0142",
+    "website": "https://www.kathmandukitchenatl.com",
+    "google_maps_url": "https://maps.google.com/?cid=12345678901234567",
+    "hours": [
+      "Monday: 11:00 AM – 9:30 PM",
+      "Tuesday: 11:00 AM – 9:30 PM",
+      "Wednesday: 11:00 AM – 9:30 PM",
+      "Thursday: 11:00 AM – 9:30 PM",
+      "Friday: 11:00 AM – 10:00 PM",
+      "Saturday: 11:00 AM – 10:00 PM",
+      "Sunday: Closed"
+    ],
+    "editorial_summary": "Family-run Nepalese restaurant serving momos, thali, and chow mein in a strip mall storefront."
+  },
+  "llm_judgment": {
+    "selected_index": 2,
+    "selected_name": "Kathmandu Kitchen",
+    "reasoning": "A Nepalese family restaurant in a diverse immigrant corridor. 89 reviews suggests a loyal local following without mainstream visibility. The strip mall location and cuisine type are strong indicators of owner-operated independence."
+  },
+  "selection_id": "a1b2c3d4e5f6a7b8",
+  "selection_mode": "llm"
+}
