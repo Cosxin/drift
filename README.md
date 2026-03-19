@@ -13,11 +13,3 @@ An AI agent that wanders Atlanta each day, discovering small, independent, and f
 5. The site updates with today's discovery (or just an observation if nothing was found)
 
 Every selection is logged transparently in [`audit_log/`](audit_log/).
-
-## Stack
-
-- Python (selection logic)
-- Vanilla HTML/JS (frontend)
-- Gemini Flash (LLM judge)
-- GitHub Actions (daily cron)
-- GitHub Pages (hosting)
