@@ -245,8 +245,8 @@
     }
 
     @keyframes endpointAppear {
-      0% { opacity: 0; transform: scale(0.5); }
-      100% { opacity: 1; transform: scale(1); }
+      0% { opacity: 0; transform: translateY(15px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
 
     @keyframes ringPulse {
@@ -451,6 +451,71 @@
       font-size: 0.75rem;
       color: var(--text-dim);
       line-height: 1.6;
+    }
+
+    /* ── Recent Picks ──────────────────────────────── */
+
+    .recent-picks {
+      margin-bottom: 2rem;
+    }
+
+    .recent-picks-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent-dim);
+      margin-bottom: 1rem;
+    }
+
+    .recent-pick-card {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      margin-bottom: 0.5rem;
+      transition: border-color 0.2s;
+    }
+
+    .recent-pick-card:hover {
+      border-color: var(--accent-dim);
+    }
+
+    .recent-pick-empty {
+      opacity: 0.25;
+    }
+
+    .recent-pick-placeholder {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    .recent-pick-link {
+      text-decoration: none;
+      display: block;
+    }
+
+    .recent-pick-name {
+      font-size: 0.95rem;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+
+    .recent-pick-link:hover .recent-pick-name {
+      color: var(--accent);
+    }
+
+    .recent-pick-detail {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.03em;
+    }
+
+    .recent-pick-date {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      margin-top: 0.15rem;
     }
 
     /* ── fullPage.js navigation dots ─────────────────── */
@@ -823,25 +888,54 @@
 
       /* ── Page 3: About ─────────────────────────────── */
 
-      function buildPage3() {
+      function buildPage3(data) {
         var h = '<div class="section-inner">';
         h += '<div class="about-title reveal">About</div>';
 
         h += '<div class="about-text reveal reveal-d1">'
-          + 'A new restaurant every day. If you missed today, you missed it.'
+          + 'An AI agent that wanders Atlanta, discovering small independent restaurants.'
           + '</div>';
 
-        h += '<ul class="about-rules reveal reveal-d2">'
+        // Recent picks
+        var recent = data.recent_picks || [];
+        if (recent.length) {
+          h += '<div class="recent-picks reveal reveal-d2">';
+          h += '<div class="recent-picks-label">Recent Discoveries</div>';
+          for (var i = 0; i < 3; i++) {
+            var rp = recent[i];
+            if (!rp) {
+              h += '<div class="recent-pick-card recent-pick-empty"><span class="recent-pick-placeholder">&mdash;</span></div>';
+            } else {
+              var rpDate = '';
+              try { rpDate = formatDate(rp.timestamp); } catch (e) {}
+              h += '<div class="recent-pick-card">';
+              if (rp.google_maps_url) {
+                h += '<a href="' + esc(rp.google_maps_url) + '" target="_blank" rel="noopener" class="recent-pick-link">';
+              }
+              h += '<div class="recent-pick-name">' + esc(rp.name) + '</div>';
+              h += '<div class="recent-pick-detail">';
+              if (rp.neighborhood) h += esc(rp.neighborhood);
+              if (rp.rating) h += ' &middot; ' + rp.rating + '\u2605';
+              h += '</div>';
+              if (rpDate) h += '<div class="recent-pick-date">' + rpDate + '</div>';
+              if (rp.google_maps_url) h += '</a>';
+              h += '</div>';
+            }
+          }
+          h += '</div>';
+        }
+
+        h += '<ul class="about-rules reveal reveal-d3">'
           + '<li>No ads, no tracking, no cookies</li>'
           + '<li>No restaurant pays to appear</li>'
           + '<li>Selection is algorithmic</li>'
           + '</ul>';
 
-        h += '<div class="about-links reveal reveal-d3">';
+        h += '<div class="about-links reveal reveal-d4">';
         h += '<a href="https://github.com/" target="_blank" rel="noopener" class="about-link">GitHub &rarr;</a>';
         h += '</div>';
 
-        h += '<div class="about-footer reveal reveal-d4">'
+        h += '<div class="about-footer reveal reveal-d5">'
           + 'An AI agent wandering Atlanta.<br>'
           + '<a href="mailto:tqlcos@gmail.com" style="color:var(--text-muted);">tqlcos@gmail.com</a>'
           + '</div>';
@@ -859,7 +953,7 @@
         if (isDiscovery) {
           sections.push({ id: 'page-discovery', html: buildPage2(data) });
         }
-        sections.push({ id: 'page-about', html: buildPage3() });
+        sections.push({ id: 'page-about', html: buildPage3(data) });
 
         var appHtml = '';
 
