@@ -610,27 +610,51 @@
       /* ── Trajectory Grid SVG ─────────────────────────── */
 
       function buildTrajectoryGrid() {
-        var vw = 800, vh = 500;
-        var vpx = 400, vpy = 40;
+        var VW = 800, VH = 500;
+        var VPX = VW / 2;
 
-        // Valley depth: how much the center dips down. Stronger near camera (large gz).
-        var valleyDepth = 55;
+        // Tuned grid params
+        var gp = {
+          amp: 95, sigX: 0.22, sigZ: 0.16,
+          cx: 0.46, cz: 0.46, peaks: 2,
+          density: 40, opacity: 0.3, aopacity: 0.5,
+          vpy: 150, fov: 1.2
+        };
 
-        // Project ground-plane (gx, gz) to screen with valley curvature
-        // gx: -1..1 horizontal, gz: 0..1 depth (0=horizon, 1=near)
-        function valley(gx, gz) {
-          var t = 0.05 + gz * 0.95;
-          var sx = vpx + (gx * (vw * 0.7)) * t;
-          var sy = vpy + (vh - vpy) * t;
-          // Parabolic valley: center (gx=0) dips down, edges rise
-          // Depth scales with gz so near-camera lines curve more
-          var dip = valleyDepth * gz * (1 - gx * gx);
-          sy += dip;
+        function getPeaks() {
+          var p = [];
+          p.push({ cx: gp.cx, cz: gp.cz, amp: gp.amp, sigX: gp.sigX, sigZ: gp.sigZ });
+          if (gp.peaks >= 2) {
+            p.push({ cx: gp.cx - 0.55, cz: gp.cz + 0.15, amp: gp.amp * 0.6, sigX: gp.sigX * 0.7, sigZ: gp.sigZ * 0.8 });
+          }
+          if (gp.peaks >= 3) {
+            p.push({ cx: gp.cx + 0.5, cz: gp.cz - 0.05, amp: gp.amp * 0.5, sigX: gp.sigX * 0.6, sigZ: gp.sigZ * 0.9 });
+          }
+          return p;
+        }
+
+        function heightAt(gx, gz) {
+          var peaks = getPeaks();
+          var h = 0;
+          for (var i = 0; i < peaks.length; i++) {
+            var pk = peaks[i];
+            var dx = (gx - pk.cx) / pk.sigX;
+            var dz = (gz - pk.cz) / pk.sigZ;
+            h += pk.amp * Math.exp(-0.5 * (dx * dx + dz * dz));
+          }
+          return h;
+        }
+
+        function project(gx, gz) {
+          var t = 0.04 + gz * 0.96;
+          var sx = VPX + (gx * VW * gp.fov) * t;
+          var sy = gp.vpy + (VH - gp.vpy) * t;
+          sy -= heightAt(gx, gz) * t;
           return [+sx.toFixed(1), +sy.toFixed(1)];
         }
 
         var s = '<div class="trajectory-container">';
-        s += '<svg class="trajectory-svg" viewBox="0 0 ' + vw + ' ' + vh + '" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">';
+        s += '<svg class="trajectory-svg" viewBox="0 0 ' + VW + ' ' + VH + '" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">';
 
         s += '<defs>';
         s += '<linearGradient id="pathGrad" x1="0%" y1="0%" x2="100%" y2="100%">';
@@ -647,74 +671,77 @@
         s += '<stop offset="100%" stop-color="#64dcff" stop-opacity="0"/>';
         s += '</radialGradient>';
         s += '<radialGradient id="horizonGlow" cx="50%" cy="0%" r="80%">';
-        s += '<stop offset="0%" stop-color="rgba(100,220,255,0.08)"/>';
+        s += '<stop offset="0%" stop-color="rgba(100,220,255,0.10)"/>';
         s += '<stop offset="100%" stop-color="rgba(100,220,255,0)"/>';
         s += '</radialGradient>';
-        s += '<filter id="gridGlow"><feGaussianBlur stdDeviation="1.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+        s += '<filter id="gridGlow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
         s += '</defs>';
 
         // Horizon glow
-        s += '<ellipse cx="' + vpx + '" cy="' + (vpy + 30) + '" rx="300" ry="80" fill="url(#horizonGlow)"/>';
+        s += '<ellipse cx="' + VPX + '" cy="' + (gp.vpy + 30) + '" rx="350" ry="100" fill="url(#horizonGlow)"/>';
 
-        // Horizontal grid lines — now curved paths following the valley
-        var hSteps = [0.08, 0.15, 0.22, 0.30, 0.40, 0.52, 0.65, 0.78, 0.90, 1.0];
-        var hSamples = 20; // sample points per horizontal line for smooth curve
-        for (var i = 0; i < hSteps.length; i++) {
-          var gz = hSteps[i];
-          var cls = (i % 3 === 0) ? 'grid-line-accent' : 'grid-line';
+        var N = gp.density;
+        var samples = 30;
+
+        // Horizontal grid lines (constant gz, sweep gx)
+        for (var i = 0; i <= N; i++) {
+          var gz = i / N;
+          var isAccent = (i % 4 === 0);
+          var op = isAccent ? gp.aopacity : gp.opacity;
+          var sw = isAccent ? 0.8 : 0.5;
           var hd = '';
-          for (var si = 0; si <= hSamples; si++) {
-            var gx = -1.2 + (2.4 * si / hSamples);
-            var pt = valley(gx, gz);
+          for (var si = 0; si <= samples; si++) {
+            var gx = -1.3 + (2.6 * si / samples);
+            var pt = project(gx, gz);
             hd += (si === 0 ? 'M' : 'L') + pt[0] + ',' + pt[1];
           }
-          s += '<path d="' + hd + '" class="' + cls + '"/>';
+          if (isAccent) {
+            s += '<path d="' + hd + '" stroke="rgba(100,220,255,' + op + ')" stroke-width="' + sw + '" fill="none" filter="url(#gridGlow)"/>';
+          } else {
+            s += '<path d="' + hd + '" stroke="rgba(100,220,255,' + op + ')" stroke-width="' + sw + '" fill="none"/>';
+          }
         }
 
-        // Vertical grid lines — now curved paths following the valley
-        var vSteps = [-1.0, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1.0];
-        var vSamples = 20;
-        for (var j = 0; j < vSteps.length; j++) {
-          var gx2 = vSteps[j];
-          var cls2 = (gx2 === 0) ? 'grid-line-accent' : 'grid-line';
+        // Vertical grid lines (constant gx, sweep gz)
+        for (var j = 0; j <= N; j++) {
+          var gx2 = -1.0 + (2.0 * j / N);
+          var isAccent2 = (j === Math.floor(N / 2)) || (j % 4 === 0);
+          var op2 = isAccent2 ? gp.aopacity : gp.opacity;
+          var sw2 = isAccent2 ? 0.8 : 0.5;
           var vd = '';
-          for (var sj = 0; sj <= vSamples; sj++) {
-            var gz2 = 0.02 + (0.98 * sj / vSamples);
-            var pt2 = valley(gx2, gz2);
+          for (var sj = 0; sj <= samples; sj++) {
+            var gz2 = 0.01 + (0.99 * sj / samples);
+            var pt2 = project(gx2, gz2);
             vd += (sj === 0 ? 'M' : 'L') + pt2[0] + ',' + pt2[1];
           }
-          s += '<path d="' + vd + '" class="' + cls2 + '"/>';
+          if (isAccent2) {
+            s += '<path d="' + vd + '" stroke="rgba(100,220,255,' + op2 + ')" stroke-width="' + sw2 + '" fill="none" filter="url(#gridGlow)"/>';
+          } else {
+            s += '<path d="' + vd + '" stroke="rgba(100,220,255,' + op2 + ')" stroke-width="' + sw2 + '" fill="none"/>';
+          }
         }
 
         // Trajectory waypoints in ground-plane coords
         var waypoints = [
-          [-0.35, 0.92],
-          [-0.28, 0.80],
-          [-0.15, 0.72],
-          [-0.20, 0.60],
-          [-0.08, 0.52],
-          [ 0.05, 0.45],
-          [ 0.12, 0.38],
-          [ 0.02, 0.30],
-          [ 0.10, 0.24],
-          [ 0.22, 0.18],
-          [ 0.18, 0.12]
+          [-0.40, 0.95], [-0.30, 0.82], [-0.18, 0.72], [-0.22, 0.62],
+          [-0.08, 0.53], [ 0.05, 0.46], [ 0.15, 0.38], [ 0.02, 0.30],
+          [ 0.12, 0.22], [ 0.20, 0.15], [ 0.15, 0.08]
         ];
 
         var pts = [];
         for (var k = 0; k < waypoints.length; k++) {
-          var p = valley(waypoints[k][0], waypoints[k][1]);
-          pts.push([p[0].toFixed(1), p[1].toFixed(1)]);
+          var p = project(waypoints[k][0], waypoints[k][1]);
+          pts.push(p);
         }
 
-        // Build smooth path
+        // Build smooth quadratic Bézier path
         var d = 'M' + pts[0][0] + ',' + pts[0][1];
         for (var m = 1; m < pts.length; m++) {
           if (m < pts.length - 1) {
-            var cpx = (+pts[m][0]);
-            var cpy = (+pts[m][1]);
-            var ex = ((+pts[m][0]) + (+pts[m+1][0])) / 2;
-            var ey = ((+pts[m][1]) + (+pts[m+1][1])) / 2;
+            var cpx = pts[m][0];
+            var cpy = pts[m][1];
+            var ex = (pts[m][0] + pts[m+1][0]) / 2;
+            var ey = (pts[m][1] + pts[m+1][1]) / 2;
             d += ' Q' + cpx + ',' + cpy + ' ' + ex.toFixed(1) + ',' + ey.toFixed(1);
           } else {
             d += ' L' + pts[m][0] + ',' + pts[m][1];
@@ -728,14 +755,14 @@
 
         // Endpoint
         var ep = pts[pts.length - 1];
-        s += '<circle cx="' + ep[0] + '" cy="' + ep[1] + '" r="12" fill="url(#endGlow)" class="trajectory-endpoint"/>';
+        s += '<circle cx="' + ep[0] + '" cy="' + ep[1] + '" r="14" fill="url(#endGlow)" class="trajectory-endpoint"/>';
         s += '<circle cx="' + ep[0] + '" cy="' + ep[1] + '" r="3.5" fill="#64dcff" class="trajectory-endpoint"/>';
-        s += '<circle cx="' + ep[0] + '" cy="' + ep[1] + '" class="endpoint-ring"/>';
+        s += '<circle cx="' + ep[0] + '" cy="' + ep[1] + '" r="8" class="endpoint-ring"/>';
 
         // Small dots at each waypoint
         for (var n = 0; n < pts.length - 1; n++) {
-          var opacity = 0.15 + (n / pts.length) * 0.4;
-          s += '<circle cx="' + pts[n][0] + '" cy="' + pts[n][1] + '" r="1.5" fill="#64dcff" opacity="' + opacity.toFixed(2) + '" class="trajectory-endpoint"/>';
+          var wo = 0.2 + (n / pts.length) * 0.5;
+          s += '<circle cx="' + pts[n][0] + '" cy="' + pts[n][1] + '" r="1.5" fill="#64dcff" opacity="' + wo.toFixed(2) + '" class="trajectory-endpoint"/>';
         }
 
         s += '</svg></div>';
