@@ -780,6 +780,53 @@ def save_audit_log(record: dict, log_dir: str = "audit_log"):
     return filepath
 
 
+def load_recent_picks(log_dir: str = "audit_log", count: int = 3) -> list[dict]:
+    """
+    Load the most recent restaurant picks from audit logs.
+    Returns up to `count` entries (newest first), each with:
+      name, address, google_maps_url, rating, timestamp
+    If fewer than `count` exist, pad the front with None.
+    """
+    log_path = Path(log_dir)
+    if not log_path.exists():
+        return [None] * count
+
+    # Collect all dated audit log files (skip current.json etc.)
+    files = sorted(
+        [f for f in log_path.glob("*.json") if f.name not in ("current.json",)],
+        reverse=True,
+    )
+
+    picks = []
+    seen_names = set()
+    for f in files:
+        if len(picks) >= count:
+            break
+        try:
+            with open(f) as fh:
+                rec = json.load(fh)
+            sel = rec.get("selected")
+            if not sel or sel.get("name") in seen_names:
+                continue
+            seen_names.add(sel["name"])
+            picks.append({
+                "name": sel.get("name"),
+                "address": sel.get("address"),
+                "google_maps_url": sel.get("google_maps_url"),
+                "rating": sel.get("rating"),
+                "timestamp": rec.get("timestamp"),
+                "neighborhood": rec.get("neighborhood_searched"),
+            })
+        except Exception:
+            continue
+
+    # Pad front with None if fewer than count
+    while len(picks) < count:
+        picks.append(None)
+
+    return picks
+
+
 def enrich_selection(record: dict, api_key: str) -> dict:
     place_id = record["selected"]["place_id"]
     if not place_id:
@@ -964,6 +1011,10 @@ def main():
             download_place_photo(record, args.api_key)
 
             save_audit_log(record, args.log_dir)
+
+            # Attach recent picks (last 3, including this one) for the frontend
+            recent = load_recent_picks(args.log_dir, count=3)
+            record["recent_picks"] = recent
 
             current_path = Path("data") / "current.json"
             with open(current_path, "w") as f:
