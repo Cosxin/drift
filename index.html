@@ -194,15 +194,16 @@
     }
 
     .grid-line {
-      stroke: rgba(100, 220, 255, 0.07);
+      stroke: rgba(100, 220, 255, 0.10);
       stroke-width: 0.5;
       fill: none;
     }
 
     .grid-line-accent {
-      stroke: rgba(100, 220, 255, 0.14);
+      stroke: rgba(100, 220, 255, 0.20);
       stroke-width: 0.7;
       fill: none;
+      filter: url(#gridGlow);
     }
 
     .trajectory-path {
@@ -583,8 +584,9 @@
 
         // "What this is" intro text
         h += '<div class="about-text reveal reveal-d1" style="margin-bottom:2.5rem;">'
-          + 'An AI agent that wanders Atlanta. Every few days it drifts a little further. '
-          + 'Each month it jumps to a new neighborhood. Some days it discovers a small, independent, family-owned restaurant and spotlights it here.'
+          + 'An AI agent that wanders Atlanta.<br><br>'
+          + 'Every few days it drifts a little further. Each month it jumps to a new neighborhood.<br><br>'
+          + 'Some days it discovers a small, independent, family-owned restaurant and spotlights it here.'
           + '</div>';
 
         h += '<div class="neighborhood-label reveal reveal-d2">' + nbr + '</div>';
@@ -608,23 +610,28 @@
       /* ── Trajectory Grid SVG ─────────────────────────── */
 
       function buildTrajectoryGrid() {
-        // Perspective projection: vanishing point at center-top
         var vw = 800, vh = 500;
-        var vpx = 400, vpy = 40; // vanishing point
+        var vpx = 400, vpy = 40;
 
-        // Project a ground-plane point to screen via perspective
-        // gz = depth (0 = horizon, 1 = bottom), gx = horizontal (-1 to 1)
-        function proj(gx, gz) {
-          var t = 0.05 + gz * 0.95; // avoid zero
+        // Valley depth: how much the center dips down. Stronger near camera (large gz).
+        var valleyDepth = 55;
+
+        // Project ground-plane (gx, gz) to screen with valley curvature
+        // gx: -1..1 horizontal, gz: 0..1 depth (0=horizon, 1=near)
+        function valley(gx, gz) {
+          var t = 0.05 + gz * 0.95;
           var sx = vpx + (gx * (vw * 0.7)) * t;
           var sy = vpy + (vh - vpy) * t;
-          return [sx.toFixed(1), sy.toFixed(1)];
+          // Parabolic valley: center (gx=0) dips down, edges rise
+          // Depth scales with gz so near-camera lines curve more
+          var dip = valleyDepth * gz * (1 - gx * gx);
+          sy += dip;
+          return [+sx.toFixed(1), +sy.toFixed(1)];
         }
 
         var s = '<div class="trajectory-container">';
         s += '<svg class="trajectory-svg" viewBox="0 0 ' + vw + ' ' + vh + '" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">';
 
-        // Defs: gradients
         s += '<defs>';
         s += '<linearGradient id="pathGrad" x1="0%" y1="0%" x2="100%" y2="100%">';
         s += '<stop offset="0%" stop-color="#a855f7"/>';
@@ -643,32 +650,43 @@
         s += '<stop offset="0%" stop-color="rgba(100,220,255,0.08)"/>';
         s += '<stop offset="100%" stop-color="rgba(100,220,255,0)"/>';
         s += '</radialGradient>';
+        s += '<filter id="gridGlow"><feGaussianBlur stdDeviation="1.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
         s += '</defs>';
 
         // Horizon glow
         s += '<ellipse cx="' + vpx + '" cy="' + (vpy + 30) + '" rx="300" ry="80" fill="url(#horizonGlow)"/>';
 
-        // Horizontal grid lines (receding into distance)
+        // Horizontal grid lines — now curved paths following the valley
         var hSteps = [0.08, 0.15, 0.22, 0.30, 0.40, 0.52, 0.65, 0.78, 0.90, 1.0];
+        var hSamples = 20; // sample points per horizontal line for smooth curve
         for (var i = 0; i < hSteps.length; i++) {
           var gz = hSteps[i];
-          var left = proj(-1.2, gz);
-          var right = proj(1.2, gz);
           var cls = (i % 3 === 0) ? 'grid-line-accent' : 'grid-line';
-          s += '<line x1="' + left[0] + '" y1="' + left[1] + '" x2="' + right[0] + '" y2="' + right[1] + '" class="' + cls + '"/>';
+          var hd = '';
+          for (var si = 0; si <= hSamples; si++) {
+            var gx = -1.2 + (2.4 * si / hSamples);
+            var pt = valley(gx, gz);
+            hd += (si === 0 ? 'M' : 'L') + pt[0] + ',' + pt[1];
+          }
+          s += '<path d="' + hd + '" class="' + cls + '"/>';
         }
 
-        // Vertical grid lines (converging to vanishing point)
+        // Vertical grid lines — now curved paths following the valley
         var vSteps = [-1.0, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1.0];
+        var vSamples = 20;
         for (var j = 0; j < vSteps.length; j++) {
-          var gx = vSteps[j];
-          var top = proj(gx, 0.02);
-          var bot = proj(gx, 1.0);
-          var cls2 = (gx === 0) ? 'grid-line-accent' : 'grid-line';
-          s += '<line x1="' + top[0] + '" y1="' + top[1] + '" x2="' + bot[0] + '" y2="' + bot[1] + '" class="' + cls2 + '"/>';
+          var gx2 = vSteps[j];
+          var cls2 = (gx2 === 0) ? 'grid-line-accent' : 'grid-line';
+          var vd = '';
+          for (var sj = 0; sj <= vSamples; sj++) {
+            var gz2 = 0.02 + (0.98 * sj / vSamples);
+            var pt2 = valley(gx2, gz2);
+            vd += (sj === 0 ? 'M' : 'L') + pt2[0] + ',' + pt2[1];
+          }
+          s += '<path d="' + vd + '" class="' + cls2 + '"/>';
         }
 
-        // Hardcoded random-walk trajectory (ground-plane coords)
+        // Trajectory waypoints in ground-plane coords
         var waypoints = [
           [-0.35, 0.92],
           [-0.28, 0.80],
@@ -685,13 +703,13 @@
 
         var pts = [];
         for (var k = 0; k < waypoints.length; k++) {
-          pts.push(proj(waypoints[k][0], waypoints[k][1]));
+          var p = valley(waypoints[k][0], waypoints[k][1]);
+          pts.push([p[0].toFixed(1), p[1].toFixed(1)]);
         }
 
         // Build smooth path
         var d = 'M' + pts[0][0] + ',' + pts[0][1];
         for (var m = 1; m < pts.length; m++) {
-          // Simple quadratic smoothing
           if (m < pts.length - 1) {
             var cpx = (+pts[m][0]);
             var cpy = (+pts[m][1]);
