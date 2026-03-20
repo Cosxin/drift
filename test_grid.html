@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grid + Trajectory Test</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #080808; color: #d8d0c4; font-family: monospace; }
+
+    .page {
+      width: 100%;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .controls {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 100;
+      background: rgba(20,20,20,0.9);
+      padding: 12px;
+      border: 1px solid #333;
+      font-size: 12px;
+      max-width: 320px;
+    }
+    .controls label { display: block; margin: 6px 0 2px; color: #999; }
+    .controls input[type=range] { width: 100%; }
+    .controls .val { color: #64dcff; float: right; }
+    .controls button {
+      margin-top: 8px;
+      padding: 4px 12px;
+      background: #222;
+      color: #ccc;
+      border: 1px solid #555;
+      cursor: pointer;
+    }
+
+    /* ── Grid container ─────────────────────────────── */
+
+    .trajectory-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 70vh;
+      overflow: hidden;
+      pointer-events: none;
+      mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.1) 8%, rgba(0,0,0,0.6) 35%, black 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.1) 8%, rgba(0,0,0,0.6) 35%, black 100%);
+    }
+
+    .trajectory-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .grid-line {
+      stroke: rgba(100, 220, 255, 0.12);
+      stroke-width: 0.6;
+      fill: none;
+    }
+
+    .grid-line-accent {
+      stroke: rgba(100, 220, 255, 0.30);
+      stroke-width: 0.8;
+      fill: none;
+      filter: url(#gridGlow);
+    }
+
+    .trajectory-path {
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 1200;
+      stroke-dashoffset: 1200;
+      animation: drawPath 3s ease-out 0.5s forwards;
+    }
+
+    .trajectory-glow {
+      fill: none;
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.3;
+      stroke-dasharray: 1200;
+      stroke-dashoffset: 1200;
+      animation: drawPath 3s ease-out 0.5s forwards;
+    }
+
+    @keyframes drawPath {
+      to { stroke-dashoffset: 0; }
+    }
+
+    .trajectory-endpoint {
+      opacity: 0;
+      animation: endpointAppear 0.6s ease-out 3.2s forwards;
+    }
+
+    .endpoint-ring {
+      fill: none;
+      stroke: #64dcff;
+      stroke-width: 1.5;
+      opacity: 0;
+      animation: endpointAppear 0.6s ease-out 3.4s forwards, ringPulse 2.5s ease-in-out 3.4s infinite;
+    }
+
+    @keyframes endpointAppear {
+      0% { opacity: 0; transform: scale(0.5); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes ringPulse {
+      0%, 100% { opacity: 0.4; r: 8; }
+      50% { opacity: 0; r: 18; }
+    }
+
+    .debug-info {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      z-index: 100;
+      color: #666;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="controls" id="controls">
+  <strong style="color:#64dcff;">Grid Terrain Controls</strong>
+
+  <label>Gaussian Amplitude (height) <span class="val" id="v-amp">120</span></label>
+  <input type="range" id="s-amp" min="0" max="300" value="120">
+
+  <label>Gaussian Sigma X <span class="val" id="v-sigx">0.35</span></label>
+  <input type="range" id="s-sigx" min="10" max="80" value="35">
+
+  <label>Gaussian Sigma Z <span class="val" id="v-sigz">0.30</span></label>
+  <input type="range" id="s-sigz" min="10" max="80" value="30">
+
+  <label>Peak Center X <span class="val" id="v-cx">0.00</span></label>
+  <input type="range" id="s-cx" min="-80" max="80" value="0">
+
+  <label>Peak Center Z <span class="val" id="v-cz">0.45</span></label>
+  <input type="range" id="s-cz" min="10" max="90" value="45">
+
+  <label>Number of Peaks <span class="val" id="v-peaks">3</span></label>
+  <input type="range" id="s-peaks" min="1" max="5" value="3">
+
+  <label>Grid Density <span class="val" id="v-density">20</span></label>
+  <input type="range" id="s-density" min="8" max="40" value="20">
+
+  <label>Grid Opacity <span class="val" id="v-opacity">0.15</span></label>
+  <input type="range" id="s-opacity" min="3" max="50" value="15">
+
+  <label>Accent Opacity <span class="val" id="v-aopacity">0.35</span></label>
+  <input type="range" id="s-aopacity" min="5" max="70" value="35">
+
+  <label>Camera Tilt (vpy) <span class="val" id="v-vpy">60</span></label>
+  <input type="range" id="s-vpy" min="0" max="200" value="60">
+
+  <label>FOV spread <span class="val" id="v-fov">0.75</span></label>
+  <input type="range" id="s-fov" min="30" max="120" value="75">
+
+  <button onclick="rebuild()">Rebuild (R)</button>
+  <button onclick="exportParams()">Export Params</button>
+</div>
+
+<div class="page" id="page">
+  <!-- grid rendered here -->
+</div>
+
+<div class="debug-info" id="debug"></div>
+
+<script>
+(function() {
+
+  // ── Parameters ──────────────────────────────────
+  var params = {
+    amp: 120,      // Gaussian peak height in SVG units
+    sigX: 0.35,    // Gaussian sigma in ground-plane X
+    sigZ: 0.30,    // Gaussian sigma in ground-plane Z
+    cx: 0.0,       // peak center X (-1..1)
+    cz: 0.45,      // peak center Z (0..1)
+    peaks: 3,      // number of Gaussian peaks
+    density: 20,   // grid lines per axis
+    opacity: 0.15, // base grid opacity
+    aopacity: 0.35,// accent grid opacity
+    vpy: 60,       // vanishing point Y
+    fov: 0.75      // field of view spread
+  };
+
+  // Fixed multi-peak layout: main center peak + flanking ridges
+  function getPeaks() {
+    var p = [];
+    // Main central peak (or valley if inverted)
+    p.push({ cx: params.cx, cz: params.cz, amp: params.amp, sigX: params.sigX, sigZ: params.sigZ });
+
+    if (params.peaks >= 2) {
+      // Left ridge
+      p.push({ cx: params.cx - 0.55, cz: params.cz + 0.15, amp: params.amp * 0.6, sigX: params.sigX * 0.7, sigZ: params.sigZ * 0.8 });
+    }
+    if (params.peaks >= 3) {
+      // Right ridge
+      p.push({ cx: params.cx + 0.5, cz: params.cz - 0.05, amp: params.amp * 0.5, sigX: params.sigX * 0.6, sigZ: params.sigZ * 0.9 });
+    }
+    if (params.peaks >= 4) {
+      // Far bump
+      p.push({ cx: params.cx + 0.15, cz: params.cz - 0.2, amp: params.amp * 0.35, sigX: params.sigX * 0.5, sigZ: params.sigZ * 0.5 });
+    }
+    if (params.peaks >= 5) {
+      // Near-left small bump
+      p.push({ cx: params.cx - 0.3, cz: params.cz + 0.3, amp: params.amp * 0.4, sigX: params.sigX * 0.5, sigZ: params.sigZ * 0.6 });
+    }
+    return p;
+  }
+
+  // ── Gaussian height field ───────────────────────
+  // Returns displacement at ground-plane coord (gx, gz)
+  // gx: -1..1, gz: 0..1
+  // Result is in SVG y-units (negative = UP on screen because y increases downward)
+  function heightAt(gx, gz) {
+    var peaks = getPeaks();
+    var h = 0;
+    for (var i = 0; i < peaks.length; i++) {
+      var pk = peaks[i];
+      var dx = (gx - pk.cx) / pk.sigX;
+      var dz = (gz - pk.cz) / pk.sigZ;
+      h += pk.amp * Math.exp(-0.5 * (dx * dx + dz * dz));
+    }
+    return h;
+  }
+
+  // ── 3D Projection ──────────────────────────────
+  // Ground plane (gx, gz) → screen (sx, sy)
+  // gx: -1..1 horizontal, gz: 0..1 depth (0=horizon, 1=camera)
+  // Height field displaces Y upward
+  var VW = 800, VH = 500;
+  var VPX = VW / 2; // vanishing point X = center
+
+  function project(gx, gz) {
+    var vpy = params.vpy;
+    var fov = params.fov;
+
+    // Perspective foreshortening: t → 0 at horizon, 1 at camera
+    var t = 0.04 + gz * 0.96;
+
+    // Screen X: spread by fov, foreshortened by t
+    var sx = VPX + (gx * VW * fov) * t;
+
+    // Screen Y: interpolate from vpy (horizon) to VH (bottom)
+    var sy = vpy + (VH - vpy) * t;
+
+    // Displace upward by Gaussian height, scaled by perspective
+    var h = heightAt(gx, gz);
+    sy -= h * t;  // scale displacement by t so near-camera bumps are bigger
+
+    return [+sx.toFixed(1), +sy.toFixed(1)];
+  }
+
+  // ── Build the SVG ──────────────────────────────
+  function buildGrid() {
+    var s = '';
+    s += '<svg class="trajectory-svg" viewBox="0 0 ' + VW + ' ' + VH + '" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">';
+
+    // Defs
+    s += '<defs>';
+    s += '<linearGradient id="pathGrad" x1="0%" y1="0%" x2="100%" y2="100%">';
+    s += '<stop offset="0%" stop-color="#a855f7"/>';
+    s += '<stop offset="40%" stop-color="#64dcff"/>';
+    s += '<stop offset="100%" stop-color="#06ffa5"/>';
+    s += '</linearGradient>';
+    s += '<linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">';
+    s += '<stop offset="0%" stop-color="#a855f7" stop-opacity="0.4"/>';
+    s += '<stop offset="100%" stop-color="#06ffa5" stop-opacity="0.2"/>';
+    s += '</linearGradient>';
+    s += '<radialGradient id="endGlow" cx="50%" cy="50%" r="50%">';
+    s += '<stop offset="0%" stop-color="#64dcff" stop-opacity="0.8"/>';
+    s += '<stop offset="100%" stop-color="#64dcff" stop-opacity="0"/>';
+    s += '</radialGradient>';
+    s += '<radialGradient id="horizonGlow" cx="50%" cy="0%" r="80%">';
+    s += '<stop offset="0%" stop-color="rgba(100,220,255,0.10)"/>';
+    s += '<stop offset="100%" stop-color="rgba(100,220,255,0)"/>';
+    s += '</radialGradient>';
+    s += '<filter id="gridGlow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+    s += '</defs>';
+
+    // Horizon glow
+    s += '<ellipse cx="' + VPX + '" cy="' + (params.vpy + 30) + '" rx="350" ry="100" fill="url(#horizonGlow)"/>';
+
+    var N = params.density;
+    var samples = 30; // smooth curve sampling
+
+    var opBase = params.opacity;
+    var opAccent = params.aopacity;
+
+    // ── Horizontal grid lines (constant gz, sweep gx) ──
+    for (var i = 0; i <= N; i++) {
+      var gz = i / N;
+      var isAccent = (i % 4 === 0);
+      var op = isAccent ? opAccent : opBase;
+      var sw = isAccent ? 0.8 : 0.5;
+      var d = '';
+      for (var si = 0; si <= samples; si++) {
+        var gx = -1.3 + (2.6 * si / samples);
+        var pt = project(gx, gz);
+        d += (si === 0 ? 'M' : 'L') + pt[0] + ',' + pt[1];
+      }
+      if (isAccent) {
+        s += '<path d="' + d + '" stroke="rgba(100,220,255,' + op + ')" stroke-width="' + sw + '" fill="none" filter="url(#gridGlow)"/>';
+      } else {
+        s += '<path d="' + d + '" stroke="rgba(100,220,255,' + op + ')" stroke-width="' + sw + '" fill="none"/>';
+      }
+    }
+
+    // ── Vertical grid lines (constant gx, sweep gz) ──
+    for (var j = 0; j <= N; j++) {
+      var gx2 = -1.0 + (2.0 * j / N);
+      var isAccent2 = (j === Math.floor(N / 2)) || (j % 4 === 0);
+      var op2 = isAccent2 ? opAccent : opBase;
+      var sw2 = isAccent2 ? 0.8 : 0.5;
+      var d2 = '';
+      for (var sj = 0; sj <= samples; sj++) {
+        var gz2 = 0.01 + (0.99 * sj / samples);
+        var pt2 = project(gx2, gz2);
+        d2 += (sj === 0 ? 'M' : 'L') + pt2[0] + ',' + pt2[1];
+      }
+      if (isAccent2) {
+        s += '<path d="' + d2 + '" stroke="rgba(100,220,255,' + op2 + ')" stroke-width="' + sw2 + '" fill="none" filter="url(#gridGlow)"/>';
+      } else {
+        s += '<path d="' + d2 + '" stroke="rgba(100,220,255,' + op2 + ')" stroke-width="' + sw2 + '" fill="none"/>';
+      }
+    }
+
+    // ── Trajectory path ──────────────────────────
+    // Waypoints in ground-plane coords, walk across the terrain
+    var waypoints = [
+      [-0.40, 0.95],
+      [-0.30, 0.82],
+      [-0.18, 0.72],
+      [-0.22, 0.62],
+      [-0.08, 0.53],
+      [ 0.05, 0.46],
+      [ 0.15, 0.38],
+      [ 0.02, 0.30],
+      [ 0.12, 0.22],
+      [ 0.20, 0.15],
+      [ 0.15, 0.08]
+    ];
+
+    var pts = [];
+    for (var k = 0; k < waypoints.length; k++) {
+      var p = project(waypoints[k][0], waypoints[k][1]);
+      pts.push(p);
+    }
+
+    // Build smooth quadratic Bézier path
+    var pd = 'M' + pts[0][0] + ',' + pts[0][1];
+    for (var m = 1; m < pts.length; m++) {
+      if (m < pts.length - 1) {
+        var cpx = pts[m][0];
+        var cpy = pts[m][1];
+        var ex = (pts[m][0] + pts[m+1][0]) / 2;
+        var ey = (pts[m][1] + pts[m+1][1]) / 2;
+        pd += ' Q' + cpx + ',' + cpy + ' ' + ex.toFixed(1) + ',' + ey.toFixed(1);
+      } else {
+        pd += ' L' + pts[m][0] + ',' + pts[m][1];
+      }
+    }
+
+    // Glow layer
+    s += '<path d="' + pd + '" class="trajectory-glow" stroke="url(#glowGrad)"/>';
+    // Main path
+    s += '<path d="' + pd + '" class="trajectory-path" stroke="url(#pathGrad)"/>';
+
+    // Endpoint
+    var ep = pts[pts.length - 1];
+    s += '<circle cx="' + ep[0] + '" cy="' + ep[1] + '" r="14" fill="url(#endGlow)" class="trajectory-endpoint"/>';
+    s += '<circle cx="' + ep[0] + '" cy="' + ep[1] + '" r="3.5" fill="#64dcff" class="trajectory-endpoint"/>';
+    s += '<circle cx="' + ep[0] + '" cy="' + ep[1] + '" r="8" class="endpoint-ring"/>';
+
+    // Small dots at waypoints
+    for (var n = 0; n < pts.length - 1; n++) {
+      var wo = 0.2 + (n / pts.length) * 0.5;
+      s += '<circle cx="' + pts[n][0] + '" cy="' + pts[n][1] + '" r="1.5" fill="#64dcff" opacity="' + wo.toFixed(2) + '" class="trajectory-endpoint"/>';
+    }
+
+    s += '</svg>';
+
+    // Debug: show endpoint screen position
+    document.getElementById('debug').textContent =
+      'Endpoint screen: (' + ep[0] + ', ' + ep[1] + ') in viewBox ' + VW + 'x' + VH +
+      ' | Height at endpoint: ' + heightAt(waypoints[waypoints.length-1][0], waypoints[waypoints.length-1][1]).toFixed(1);
+
+    return s;
+  }
+
+  // ── Render ──────────────────────────────────────
+  function rebuild() {
+    var container = document.getElementById('page');
+    container.innerHTML = '<div class="trajectory-container">' + buildGrid() + '</div>';
+  }
+
+  // ── Slider wiring ──────────────────────────────
+  var sliders = {
+    'amp':      { el: 's-amp',      disp: 'v-amp',      parse: function(v) { return +v; } },
+    'sigX':     { el: 's-sigx',     disp: 'v-sigx',     parse: function(v) { return v / 100; } },
+    'sigZ':     { el: 's-sigz',     disp: 'v-sigz',     parse: function(v) { return v / 100; } },
+    'cx':       { el: 's-cx',       disp: 'v-cx',       parse: function(v) { return v / 100; } },
+    'cz':       { el: 's-cz',       disp: 'v-cz',       parse: function(v) { return v / 100; } },
+    'peaks':    { el: 's-peaks',    disp: 'v-peaks',    parse: function(v) { return +v; } },
+    'density':  { el: 's-density',  disp: 'v-density',  parse: function(v) { return +v; } },
+    'opacity':  { el: 's-opacity',  disp: 'v-opacity',  parse: function(v) { return v / 100; } },
+    'aopacity': { el: 's-aopacity', disp: 'v-aopacity', parse: function(v) { return v / 100; } },
+    'vpy':      { el: 's-vpy',      disp: 'v-vpy',      parse: function(v) { return +v; } },
+    'fov':      { el: 's-fov',      disp: 'v-fov',      parse: function(v) { return v / 100; } },
+  };
+
+  Object.keys(sliders).forEach(function(key) {
+    var cfg = sliders[key];
+    var el = document.getElementById(cfg.el);
+    el.addEventListener('input', function() {
+      var val = cfg.parse(el.value);
+      params[key] = val;
+      document.getElementById(cfg.disp).textContent = (typeof val === 'number' && val % 1 !== 0) ? val.toFixed(2) : val;
+      rebuild();
+    });
+  });
+
+  // Keyboard shortcut
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'r' || e.key === 'R') rebuild();
+  });
+
+  // Export current params to console
+  window.exportParams = function() {
+    console.log('Current params:', JSON.stringify(params, null, 2));
+    alert('Params logged to console:\n' + JSON.stringify(params, null, 2));
+  };
+
+  window.rebuild = rebuild;
+
+  // Initial render
+  rebuild();
+
+})();
+</script>
+</body>
+</html>
