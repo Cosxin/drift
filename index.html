@@ -179,7 +179,6 @@
       left: 50%;
       transform: translateX(-50%);
       width: 100%;
-      max-width: 960px;
       height: 55vh;
       overflow: hidden;
       pointer-events: none;
@@ -660,9 +659,8 @@
 
         // "What this is" intro text
         h += '<div class="about-text reveal reveal-d1" style="margin-bottom:2.5rem;">'
-          + 'An AI agent that wanders Atlanta.<br><br>'
-          + 'Every few days it drifts a little further. Each month it jumps to a new neighborhood.<br><br>'
-          + 'Some days it discovers a small, independent, family-owned restaurant and spotlights it here.'
+          + 'An AI agent exploring Atlanta, one neighborhood at a time.<br><br>'
+          + 'It drifts a little further with every walk \u2014 discovering small, family-owned restaurants that deserve a spotlight.'
           + '</div>';
 
         h += '<div class="neighborhood-label reveal reveal-d2">' + nbr + '</div>';
@@ -901,10 +899,6 @@
 
       function buildPage3(data) {
         var h = '<div class="section-inner">';
-
-        h += '<div class="about-text reveal reveal-d1">'
-          + 'An AI agent that wanders Atlanta, discovering small independent restaurants.'
-          + '</div>';
 
         // Recent picks
         var recent = data.recent_picks || [];
