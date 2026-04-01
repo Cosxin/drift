@@ -71,31 +71,5 @@
     "excluded_reasons": {},
     "reasoning": "New South Kitchen appears to be an independent restaurant focusing on regional Southern cuisine, which aligns with the goal of spotlighting places with a cultural connection and a personal story."
   },
-  "llm_provider": "gemini",
-  "recent_picks": [
-    {
-      "name": "New South Kitchen",
-      "address": "190 Marietta St NW, Atlanta, GA 30303, USA",
-      "google_maps_url": "https://maps.google.com/?cid=2693818071706687899&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
-      "rating": 4.2,
-      "timestamp": "2026-04-01T15:45:23.456133+00:00",
-      "neighborhood": "Downtown Atlanta, GA"
-    },
-    {
-      "name": "Capolinea",
-      "address": "159 Northside Dr NW, Atlanta, GA 30313, USA",
-      "google_maps_url": "https://maps.google.com/?cid=10363479357067896501&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
-      "rating": 4.8,
-      "timestamp": "2026-03-28T14:53:16.552644+00:00",
-      "neighborhood": "Downtown Atlanta, GA"
-    },
-    {
-      "name": "Georgia Boy",
-      "address": "1043 Ponce De Leon Ave NE, Atlanta, GA 30306, USA",
-      "google_maps_url": "https://maps.google.com/?cid=17496225036827500865&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
-      "rating": 4.5,
-      "timestamp": "2026-03-19T03:27:10.361077+00:00",
-      "neighborhood": "Poncey-Highland Atlanta, GA"
-    }
-  ]
+  "llm_provider": "gemini"
 }
