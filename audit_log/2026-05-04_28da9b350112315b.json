@@ -71,31 +71,5 @@
     "excluded_reasons": {},
     "reasoning": "This restaurant appears to be an independent establishment focusing on regional Southern cuisine, aligning well with the criteria for a small, culturally reflective, and deserving business."
   },
-  "llm_provider": "gemini",
-  "recent_picks": [
-    {
-      "name": "New South Kitchen",
-      "address": "190 Marietta St NW, Atlanta, GA 30303, USA",
-      "google_maps_url": "https://maps.google.com/?cid=2693818071706687899&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
-      "rating": 4.2,
-      "timestamp": "2026-05-04T16:15:14.875619+00:00",
-      "neighborhood": "Downtown Atlanta, GA"
-    },
-    {
-      "name": "Social Capitol",
-      "address": "110 Mitchell St SW, Atlanta, GA 30303, USA",
-      "google_maps_url": "https://maps.google.com/?cid=13657339734215484595&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
-      "rating": 3.6,
-      "timestamp": "2026-04-25T15:03:17.261641+00:00",
-      "neighborhood": "Downtown Atlanta, GA"
-    },
-    {
-      "name": "Auburn Angel",
-      "address": "302 Auburn Ave NE, Atlanta, GA 30303, USA",
-      "google_maps_url": "https://maps.google.com/?cid=5131325712581641160&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
-      "rating": 4.8,
-      "timestamp": "2026-04-19T15:00:46.984060+00:00",
-      "neighborhood": "Downtown Atlanta, GA"
-    }
-  ]
+  "llm_provider": "gemini"
 }
