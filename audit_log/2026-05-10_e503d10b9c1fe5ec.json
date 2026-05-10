@@ -86,31 +86,5 @@
     "excluded_reasons": {},
     "reasoning": "Social Capitol, with its very low review count and moderate rating, appears to be a smaller, less discovered establishment that would greatly benefit from BLIND's exposure to help it grow and find its audience."
   },
-  "llm_provider": "gemini",
-  "recent_picks": [
-    {
-      "name": "Social Capitol",
-      "address": "110 Mitchell St SW, Atlanta, GA 30303, USA",
-      "google_maps_url": "https://maps.google.com/?cid=13657339734215484595&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
-      "rating": 3.6,
-      "timestamp": "2026-05-10T15:15:51.123421+00:00",
-      "neighborhood": "Downtown Atlanta, GA"
-    },
-    {
-      "name": "New South Kitchen",
-      "address": "190 Marietta St NW, Atlanta, GA 30303, USA",
-      "google_maps_url": "https://maps.google.com/?cid=2693818071706687899&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
-      "rating": 4.2,
-      "timestamp": "2026-05-07T16:19:03.772289+00:00",
-      "neighborhood": "Downtown Atlanta, GA"
-    },
-    {
-      "name": "Auburn Angel",
-      "address": "302 Auburn Ave NE, Atlanta, GA 30303, USA",
-      "google_maps_url": "https://maps.google.com/?cid=5131325712581641160&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
-      "rating": 4.8,
-      "timestamp": "2026-04-19T15:00:46.984060+00:00",
-      "neighborhood": "Downtown Atlanta, GA"
-    }
-  ]
+  "llm_provider": "gemini"
 }
