@@ -1,9 +1,9 @@
 {
-  "month": "2026-05",
+  "month": "2026-06",
   "neighborhood": "Downtown Atlanta, GA",
   "base_lat": 33.749,
   "base_lng": -84.388,
-  "current_lat": 33.742821710418205,
-  "current_lng": -84.36382410779417,
-  "step_count": 9
+  "current_lat": 33.749,
+  "current_lng": -84.388,
+  "step_count": 0
 }
