@@ -71,31 +71,5 @@
     "excluded_reasons": {},
     "reasoning": "This candidate is explicitly a restaurant with a low review count, suggesting it is a small, independent establishment that would greatly benefit from free exposure."
   },
-  "llm_provider": "gemini",
-  "recent_picks": [
-    {
-      "name": "Social Capitol",
-      "address": "110 Mitchell St SW, Atlanta, GA 30303, USA",
-      "google_maps_url": "https://maps.google.com/?cid=13657339734215484595&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
-      "rating": 3.8,
-      "timestamp": "2026-06-04T17:24:24.882246+00:00",
-      "neighborhood": "Downtown Atlanta, GA"
-    },
-    {
-      "name": "Magic City Kitchen",
-      "address": "241 Forsyth St SW Unit A, Atlanta, GA 30303, USA",
-      "google_maps_url": "https://maps.google.com/?cid=1890340625740517415&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
-      "rating": 4.4,
-      "timestamp": "2026-06-01T19:25:48.853422+00:00",
-      "neighborhood": "Downtown Atlanta, GA"
-    },
-    {
-      "name": "New South Kitchen",
-      "address": "190 Marietta St NW, Atlanta, GA 30303, USA",
-      "google_maps_url": "https://maps.google.com/?cid=2693818071706687899&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
-      "rating": 4.3,
-      "timestamp": "2026-05-25T16:33:40.240237+00:00",
-      "neighborhood": "Downtown Atlanta, GA"
-    }
-  ]
+  "llm_provider": "gemini"
 }
