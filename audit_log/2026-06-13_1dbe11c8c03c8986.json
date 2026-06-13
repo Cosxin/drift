@@ -75,31 +75,5 @@
     "excluded_reasons": {},
     "reasoning": "Auburn Angel is a highly-rated fine dining restaurant that appears to be independent and would benefit from exposure to help it grow its customer base. Its focus on fine dining suggests a chef-driven concept, aligning with the personal story aspect."
   },
-  "llm_provider": "gemini",
-  "recent_picks": [
-    {
-      "name": "Auburn Angel",
-      "address": "302 Auburn Ave NE, Atlanta, GA 30303, USA",
-      "google_maps_url": "https://maps.google.com/?cid=5131325712581641160&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
-      "rating": 4.8,
-      "timestamp": "2026-06-13T15:51:28.053092+00:00",
-      "neighborhood": "Downtown Atlanta, GA"
-    },
-    {
-      "name": "Social Capitol",
-      "address": "110 Mitchell St SW, Atlanta, GA 30303, USA",
-      "google_maps_url": "https://maps.google.com/?cid=13657339734215484595&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
-      "rating": 3.8,
-      "timestamp": "2026-06-04T17:24:24.882246+00:00",
-      "neighborhood": "Downtown Atlanta, GA"
-    },
-    {
-      "name": "Magic City Kitchen",
-      "address": "241 Forsyth St SW Unit A, Atlanta, GA 30303, USA",
-      "google_maps_url": "https://maps.google.com/?cid=1890340625740517415&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
-      "rating": 4.4,
-      "timestamp": "2026-06-01T19:25:48.853422+00:00",
-      "neighborhood": "Downtown Atlanta, GA"
-    }
-  ]
+  "llm_provider": "gemini"
 }
